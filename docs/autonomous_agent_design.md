@@ -1,12 +1,6 @@
 # Autonomous AI Agent Architecture for Enterprise Testing & Requirements Management
 
-**Design Document v1.0**
-
-**Author:** Manus AI  
-**Date:** January 31, 2026  
 **Target Platform:** Windows 11 Enterprise Desktops (Intel/AMD CPU)
-
----
 
 ## Executive Summary
 
