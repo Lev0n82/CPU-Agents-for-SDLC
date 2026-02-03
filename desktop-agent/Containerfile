@@ -1,0 +1,44 @@
+# Autonomous Agent - Podman Containerfile
+# Based on Microsoft's official .NET 8.0 runtime image
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy solution and project files
+COPY ["AutonomousAgent.sln", "./"]
+COPY ["src/AutonomousAgent.Core/AutonomousAgent.Core.csproj", "src/AutonomousAgent.Core/"]
+
+# Restore dependencies
+RUN dotnet restore "AutonomousAgent.sln"
+
+# Copy all source code
+COPY . .
+
+# Build the project
+WORKDIR "/src/src/AutonomousAgent.Core"
+RUN dotnet build "AutonomousAgent.Core.csproj" -c Release -o /app/build
+
+# Stage 2: Publish
+FROM build AS publish
+RUN dotnet publish "AutonomousAgent.Core.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 3: Runtime
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS final
+WORKDIR /app
+
+# Copy published application
+COPY --from=publish /app/publish .
+
+# Set environment variables
+ENV DOTNET_RUNNING_IN_CONTAINER=true
+ENV ASPNETCORE_ENVIRONMENT=Production
+
+# Create a non-root user for security
+RUN useradd -m -s /bin/bash agentuser && \
+    chown -R agentuser:agentuser /app
+
+USER agentuser
+
+# Entry point
+ENTRYPOINT ["dotnet", "AutonomousAgent.Core.dll"]
