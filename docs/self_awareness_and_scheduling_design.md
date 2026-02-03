@@ -1,11 +1,5 @@
 # Self-Awareness and Proactive Scheduling System
 
-**Design Document v1.0**
-
-**Author:** Manus AI  
-**Date:** January 31, 2026
-
----
 
 ## 1. Introduction
 
