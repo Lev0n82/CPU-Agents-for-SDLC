@@ -1,7 +1,5 @@
 # Autonomous AI Agent Architecture for Enterprise Desktops
 
-**Author:** Manus AI
-**Date:** January 31, 2026
 
 ## 1. Introduction
 
