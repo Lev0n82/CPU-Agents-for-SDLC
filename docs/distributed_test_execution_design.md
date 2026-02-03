@@ -1,13 +1,5 @@
 # Distributed Test Execution System with Execution Minions and CRT Live View
 
-**Design Document v1.0**
-
-**Author:** Manus AI  
-**Date:** January 31, 2026  
-**Target Platform:** Windows 10/11 Enterprise Desktops
-
----
-
 ## Executive Summary
 
 This document outlines a sophisticated, distributed test execution architecture designed to enhance enterprise quality assurance workflows. The system leverages a network of autonomous "Execution Minions" running on standard Windows PCs to create a scalable and resilient test farm. Each minion is capable of self-provisioning required software dependencies, executing a wide range of automated tests, and providing rich feedback, including high-quality video recordings and real-time, low-latency screen streaming.
