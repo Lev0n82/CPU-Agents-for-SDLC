@@ -1,10 +1,6 @@
 # Autonomous Agent - Podman Deployment Guide
 
 **Project:** Self-Aware CPU-Optimized Autonomous AI Agent  
-**Date:** January 31, 2026  
-**Author:** Manus AI
-
----
 
 ## 1. Introduction
 
