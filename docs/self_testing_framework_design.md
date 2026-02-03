@@ -1,12 +1,5 @@
 # Self-Testing Framework for the Autonomous AI Agent
 
-**Design Document v1.0**
-
-**Author:** Manus AI  
-**Date:** January 31, 2026
-
----
-
 ## 1. Introduction
 
 To ensure the reliability, robustness, and integrity of the autonomous AI agent, a comprehensive self-testing framework is essential. This framework is designed to be an integral part of the agent's startup sequence and ongoing operations, providing a multi-level validation of its core components and capabilities. The primary goal is to create a self-aware agent that can verify its own health and functionality before beginning its tasks, ensuring a high degree of confidence in its operations.
