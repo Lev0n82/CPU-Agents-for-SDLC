@@ -1,9 +1,5 @@
 # Mobile Micro Agent Architecture for iOS and Android
 
-**Design Document v1.0**
-
-**Author:** Manus AI  
-**Date:** January 31, 2026  
 **Target Platforms:** iOS (iPhone 12+) and Android (Pixel 6+)
 
 ---
