@@ -54,9 +54,8 @@ public class ModelManager : IModelManager
     {
         var catalog = await GetCatalogAsync(cancellationToken: cancellationToken);
         var modelInfo = catalog.Models.FirstOrDefault(m => m.ModelId == modelId);
-        
         if (modelInfo == null)
-            throw new ModelNotFoundException(modelId);
+            throw new ArgumentException($"Model not found: {modelId}", nameof(modelId));
 
         var localPath = Path.Combine(_modelsDirectory, $"{modelId}.gguf");
         

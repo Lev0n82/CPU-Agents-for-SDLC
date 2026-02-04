@@ -26,7 +26,11 @@ public class MockLlamaEngine : ILlamaEngine
         
         options.Validate();
         
-        if (!File.Exists(modelPath))
+        if (string.IsNullOrWhiteSpace(modelPath))
+            throw new Exceptions.InvalidModelException(modelPath ?? "", "Model path cannot be empty");
+        
+        // For testing: only check file exists if path looks like a real file path
+        if (modelPath.Contains(Path.DirectorySeparatorChar) && !File.Exists(modelPath))
             throw new FileNotFoundException($"Model file not found: {modelPath}", modelPath);
         
         // Simulate loading time

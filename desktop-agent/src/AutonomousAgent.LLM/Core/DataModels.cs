@@ -218,4 +218,5 @@ public class EngineInfo
     public string BuildInfo { get; set; } = string.Empty;
     public List<string> CpuCapabilities { get; set; } = new();
     public bool SupportsGpu { get; set; }
+    public bool SupportsStreaming { get; set; } = true;
 }

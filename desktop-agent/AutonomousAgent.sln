@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutonomousAgent.Core", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutonomousAgent.LLM", "src\AutonomousAgent.LLM\AutonomousAgent.LLM.csproj", "{19C3DB42-568B-4141-B9FD-A4595D2FF572}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutonomousAgent.LLM.Tests", "src\AutonomousAgent.LLM.Tests\AutonomousAgent.LLM.Tests.csproj", "{E3755CEC-EB75-4D0F-82E1-2C31F9D9C71B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,9 +28,14 @@ Global
 		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3755CEC-EB75-4D0F-82E1-2C31F9D9C71B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3755CEC-EB75-4D0F-82E1-2C31F9D9C71B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3755CEC-EB75-4D0F-82E1-2C31F9D9C71B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3755CEC-EB75-4D0F-82E1-2C31F9D9C71B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BF53EF04-3308-429D-A091-68EDBD86AB61} = {768CDC5D-0CF3-4591-A063-3AEF57185669}
 		{19C3DB42-568B-4141-B9FD-A4595D2FF572} = {768CDC5D-0CF3-4591-A063-3AEF57185669}
+		{E3755CEC-EB75-4D0F-82E1-2C31F9D9C71B} = {768CDC5D-0CF3-4591-A063-3AEF57185669}
 	EndGlobalSection
 EndGlobal
