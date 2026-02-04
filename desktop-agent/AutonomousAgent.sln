@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{768CDC5D-0CF
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutonomousAgent.Core", "src\AutonomousAgent.Core\AutonomousAgent.Core.csproj", "{BF53EF04-3308-429D-A091-68EDBD86AB61}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutonomousAgent.LLM", "src\AutonomousAgent.LLM\AutonomousAgent.LLM.csproj", "{19C3DB42-568B-4141-B9FD-A4595D2FF572}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +22,13 @@ Global
 		{BF53EF04-3308-429D-A091-68EDBD86AB61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF53EF04-3308-429D-A091-68EDBD86AB61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF53EF04-3308-429D-A091-68EDBD86AB61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19C3DB42-568B-4141-B9FD-A4595D2FF572}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{BF53EF04-3308-429D-A091-68EDBD86AB61} = {768CDC5D-0CF3-4591-A063-3AEF57185669}
+		{19C3DB42-568B-4141-B9FD-A4595D2FF572} = {768CDC5D-0CF3-4591-A063-3AEF57185669}
 	EndGlobalSection
 EndGlobal
