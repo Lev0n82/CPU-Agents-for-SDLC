@@ -99,11 +99,27 @@ public class ModelManager : IModelManager
         return true;
     }
 
-    public async Task<bool> VerifyModelAsync(string modelId)
+    public async Task<bool> VerifyModelAsync(string modelIdOrPath)
     {
-        var localPath = Path.Combine(_modelsDirectory, $"{modelId}.gguf");
         await Task.CompletedTask;
-        return File.Exists(localPath);
+        
+        // Handle both model ID and full file path
+        string pathToCheck;
+        if (File.Exists(modelIdOrPath))
+        {
+            pathToCheck = modelIdOrPath;
+        }
+        else
+        {
+            pathToCheck = Path.Combine(_modelsDirectory, $"{modelIdOrPath}.gguf");
+        }
+        
+        if (!File.Exists(pathToCheck))
+            return false;
+        
+        // For mock scenarios, just check file exists
+        // In production, would verify SHA-256 hash
+        return true;
     }
 
     private ModelCatalog GetEmbeddedCatalog()

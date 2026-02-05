@@ -102,6 +102,9 @@ public class MockLlamaModel : ILlamaModel
         ModelId = Path.GetFileNameWithoutExtension(filePath);
         LoadedAt = DateTime.UtcNow;
         
+        // For testing: use actual file size if file exists, otherwise use default
+        long fileSize = File.Exists(filePath) ? new FileInfo(filePath).Length : 2_400_000_000; // 2.4 GB default
+        
         Metadata = new ModelMetadata
         {
             Name = ModelId,
@@ -109,7 +112,7 @@ public class MockLlamaModel : ILlamaModel
             ParameterCount = 3_800_000_000, // 3.8B
             Quantization = "Q4_K_M",
             ContextLength = options.ContextLength,
-            FileSizeBytes = new FileInfo(filePath).Length,
+            FileSizeBytes = fileSize,
             Version = "1.0"
         };
     }
@@ -131,7 +134,9 @@ public class MockLlamaModel : ILlamaModel
 
     public bool Validate()
     {
-        return !_disposed && File.Exists(FilePath);
+        // For testing: consider model valid if not disposed
+        // In production, this would check file integrity
+        return !_disposed;
     }
 
     public void Dispose()

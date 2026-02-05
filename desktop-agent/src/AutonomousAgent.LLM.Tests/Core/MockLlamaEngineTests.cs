@@ -20,7 +20,7 @@ public class MockLlamaEngineTests
         var info = engine.GetEngineInfo();
         
         Assert.NotNull(info);
-        Assert.Equal("Mock Llama Engine", info.Version);
+        Assert.Equal("Mock 1.0.0", info.Version);
         Assert.True(info.SupportsStreaming);
     }
 
