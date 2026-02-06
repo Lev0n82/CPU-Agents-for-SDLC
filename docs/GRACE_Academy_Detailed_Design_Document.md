@@ -2,7 +2,6 @@
 
 **Document Version:** 1.0.0  
 **Document Date:** January 31, 2026  
-**Author:** Manus AI  
 **Classification:** Technical Specification  
 **Repository:** github.com/Lev0n82/AskMarilyn
 
