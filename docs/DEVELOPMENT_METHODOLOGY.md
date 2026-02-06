@@ -2,7 +2,6 @@
 
 **Version:** 1.0  
 **Last Updated:** February 6, 2026  
-**Author:** Manus AI
 
 ## Executive Summary
 
