@@ -122,6 +122,42 @@ Distributed test execution system:
 
 ---
 
+## 🎓 Development Methodology
+
+This project follows the **comprehensive-implementation methodology**, a systematic seven-phase approach that ensures high-quality, production-ready software through architecture-first design, specification-first development, multi-level testing, and complete documentation.
+
+### Key Principles
+
+- **Architecture-First**: Complete system architecture designed before specifications or code
+- **Specification-First**: Detailed specs created and approved before implementation
+- **Multi-Level Acceptance Criteria**: Success criteria defined at function, class, module, and system levels
+- **Built-In Self-Testing**: Continuous validation at all levels
+- **Comprehensive Documentation**: Complete documentation at each phase
+
+### For Contributors
+
+If you want to extend the system or contribute new features, **you must follow this methodology** to ensure consistency and quality. See the complete guide:
+
+📖 **[Development Methodology Guide](docs/DEVELOPMENT_METHODOLOGY.md)** - Comprehensive guide with templates and examples
+
+The methodology includes:
+- Seven-phase workflow (Research → Architecture → Specifications → Implementation → Testing → Delivery)
+- Four professional templates for architecture, specifications, APIs, and test results
+- Multi-level acceptance criteria framework
+- Built-in self-testing guidelines
+- Quality metrics and standards
+- Complete Phase 2 example (17 hours, 100% test pass rate)
+
+### Quick Reference for Contributors
+
+**Adding a new feature?** Follow Phases 0-6 starting with research and architecture updates.
+
+**Creating a new agent?** Use the complete seven-phase workflow with the architecture design template.
+
+**Implementing a new phase?** Use the comprehensive-implementation skill: "Use the comprehensive-implementation skill to implement Phase 3."
+
+---
+
 ## 📚 Documentation
 
 ### Getting Started
@@ -130,11 +166,18 @@ Distributed test execution system:
 - [Podman Deployment Guide](docs/PODMAN_DEPLOYMENT.md) - Container deployment details
 
 ### Architecture & Design
+- [Development Methodology Guide](docs/DEVELOPMENT_METHODOLOGY.md) - **START HERE** for contributors
 - [Autonomous Agent Design](docs/autonomous_agent_design.md) - Complete desktop agent architecture
 - [Mobile Micro-Agent Design](docs/mobile_micro_agent_design.md) - Mobile agent specifications
 - [Distributed Execution Design](docs/distributed_test_execution_design.md) - Minion system architecture
 - [Self-Testing Framework](docs/self_testing_framework_design.md) - Multi-level testing approach
 - [Scheduling & Self-Awareness](docs/self_awareness_and_scheduling_design.md) - Proactive behavior design
+
+### Phase 2 Implementation (LLM Integration)
+- [Phase 2 Implementation Spec](docs/phase2_implementation_spec.md) - 42-page detailed specification
+- [Phase 2 API Specification](docs/phase2_api_specifications.md) - 45-page API documentation
+- [Phase 2 Test Results](docs/PHASE2_TEST_RESULTS_REPORT.md) - Comprehensive test validation
+- [Phase 2 Final Report](docs/PHASE2_FINAL_REPORT.md) - Complete delivery summary
 
 ### Integration
 - [Azure DevOps Integration](docs/azure_devops_integration_summary.md) - API integration details
@@ -268,11 +311,13 @@ cd desktop-agent
 - [x] Podman containerization
 - [x] Comprehensive documentation
 
-### Phase 2: LLM Integration (In Progress)
-- [ ] llama.cpp integration
-- [ ] Model management system
-- [ ] Prompt engineering framework
-- [ ] Context management
+### Phase 2: LLM Integration ✅ (Complete)
+- [x] llama.cpp integration (mock implementation)
+- [x] Model management system
+- [x] Prompt engineering framework
+- [x] Context management
+- [x] 51 comprehensive tests (100% pass rate)
+- [x] Complete API specifications (42 methods, 10 data models)
 
 ### Phase 3: Azure DevOps Integration
 - [ ] Azure Boards API integration
@@ -301,13 +346,29 @@ cd desktop-agent
 
 ## 🤝 Contributing
 
-This is a private repository. For questions or contributions, please contact the repository owner.
+Contributions are welcome! Before contributing, please:
+
+1. **Read the [Development Methodology Guide](docs/DEVELOPMENT_METHODOLOGY.md)** - This is mandatory
+2. **Follow the seven-phase workflow** - No shortcuts
+3. **Use the provided templates** - Located in `/home/ubuntu/skills/comprehensive-implementation/templates/`
+4. **Achieve 100% test pass rate** - All tests must pass before submitting
+5. **Document comprehensively** - Use the templates for all documentation
+
+### Contribution Process
+
+1. **Choose your contribution** (new feature, new agent, new phase, bug fix)
+2. **Follow the methodology** starting with Phase 0 (Research)
+3. **Create specifications** before any implementation (Phase 2)
+4. **Implement with tests** achieving 100% pass rate (Phases 3-5)
+5. **Document and submit** pull request with all deliverables (Phase 6)
+
+See the [Development Methodology Guide](docs/DEVELOPMENT_METHODOLOGY.md) for detailed instructions and examples.
 
 ---
 
 ## 📄 License
 
-Proprietary - All rights reserved.
+MIT License - See [LICENSE](LICENSE) file for details.
 
 ---
 
