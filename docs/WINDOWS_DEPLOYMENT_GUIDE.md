@@ -33,10 +33,10 @@ First, clone the repository and check out the correct branch.
 # Open PowerShell or Command Prompt
 
 # Clone the repository
-git clone https://github.com/Lev0n82/AskMarilyn.git
+git clone https://github.com/Lev0n82/CPU-Agents-for-SDLC.git
 
 # Navigate to the repository directory
-cd AskMarilyn
+cd CPU-Agents-for-SDLC
 
 # Switch to the feature branch
 git checkout feature/autonomous-agent
