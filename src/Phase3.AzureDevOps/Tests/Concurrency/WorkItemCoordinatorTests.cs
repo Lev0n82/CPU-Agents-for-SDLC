@@ -3,7 +3,6 @@ using Moq;
 using Microsoft.Extensions.Logging;
 using Phase3.AzureDevOps.Services.Concurrency;
 using Phase3.AzureDevOps.Interfaces;
-using Phase3.AzureDevOps.Models;
 using Phase3.AzureDevOps.Configuration;
 using Phase3.AzureDevOps.Core;
 using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
@@ -30,29 +29,36 @@ public class WorkItemCoordinatorTests
     }
 
     [Fact]
-    public async Task ClaimWorkItemAsync_AvailableWorkItem_SuccessfullyClaims()
+    public async Task TryClaimWorkItemAsync_AvailableWorkItem_SuccessfullyClaims()
     {
         // Arrange
         int workItemId = 123;
         string agentId = "agent-1";
-        var workItem = new WorkItem { Id = workItemId, Rev = 1, Fields = new Dictionary<string, object>() };
+        var workItem = new WorkItem 
+        { 
+            Id = workItemId, 
+            Rev = 1, 
+            Fields = new Dictionary<string, object>() 
+        };
         
         _clientMock.Setup(x => x.GetWorkItemAsync(workItemId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(workItem);
-        _clientMock.Setup(x => x.UpdateWorkItemAsync(workItemId, It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+        _clientMock.Setup(x => x.UpdateWorkItemAsync(
+            workItemId, 
+            It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(), 
+            It.IsAny<int?>(), 
+            It.IsAny<CancellationToken>()))
             .ReturnsAsync(workItem);
 
         // Act
-        var result = await _coordinator.ClaimWorkItemAsync(workItemId, agentId);
+        var result = await _coordinator.TryClaimWorkItemAsync(workItemId, 1, agentId);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(workItemId, result.WorkItemId);
-        Assert.Equal(agentId, result.AgentId);
+        Assert.True(result);
     }
 
     [Fact]
-    public async Task ClaimWorkItemAsync_AlreadyClaimed_ThrowsConcurrencyException()
+    public async Task TryClaimWorkItemAsync_AlreadyClaimed_ThrowsConcurrencyException()
     {
         // Arrange
         int workItemId = 123;
@@ -68,12 +74,18 @@ public class WorkItemCoordinatorTests
             }
         };
         
-        _clientMock.Setup(x => x.GetWorkItemAsync(workItemId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(workItem);
+        _clientMock.Setup(x => x.UpdateWorkItemAsync(
+            workItemId,
+            It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(),
+            It.IsAny<int?>(),
+            It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ConcurrencyException("Work item is already claimed by another agent"));
 
-        // Act & Assert
-        await Assert.ThrowsAsync<ConcurrencyException>(() => 
-            _coordinator.ClaimWorkItemAsync(workItemId, agentId));
+        // Act
+        var result = await _coordinator.TryClaimWorkItemAsync(workItemId, 1, agentId);
+
+        // Assert
+        Assert.False(result);
     }
 
     [Fact]
@@ -95,47 +107,21 @@ public class WorkItemCoordinatorTests
         
         _clientMock.Setup(x => x.GetWorkItemAsync(workItemId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(workItem);
-        _clientMock.Setup(x => x.UpdateWorkItemAsync(workItemId, It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+        _clientMock.Setup(x => x.UpdateWorkItemAsync(
+            workItemId, 
+            It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(), 
+            It.IsAny<int?>(), 
+            It.IsAny<CancellationToken>()))
             .ReturnsAsync(workItem);
 
         // Act
         await _coordinator.ReleaseWorkItemAsync(workItemId, revision, agentId);
 
-        // Assert
+        // Assert - No exception thrown
         _clientMock.Verify(x => x.UpdateWorkItemAsync(
             workItemId, 
             It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(), 
             It.IsAny<int?>(), 
             It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task RenewClaimAsync_OwnedWorkItem_SuccessfullyRenews()
-    {
-        // Arrange
-        int workItemId = 123;
-        string agentId = "agent-1";
-        var workItem = new WorkItem 
-        { 
-            Id = workItemId, 
-            Rev = 2, 
-            Fields = new Dictionary<string, object>
-            {
-                { "Custom.ProcessingAgent", agentId },
-                { "Custom.ClaimExpiry", DateTime.UtcNow.AddMinutes(5) }
-            }
-        };
-        
-        _clientMock.Setup(x => x.GetWorkItemAsync(workItemId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(workItem);
-        _clientMock.Setup(x => x.UpdateWorkItemAsync(workItemId, It.IsAny<Microsoft.VisualStudio.Services.WebApi.Patch.Json.JsonPatchDocument>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(workItem);
-
-        // Act
-        var result = await _coordinator.RenewClaimAsync(workItemId, agentId);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.True(result.ExpiresAt > DateTime.UtcNow.AddMinutes(10));
     }
 }

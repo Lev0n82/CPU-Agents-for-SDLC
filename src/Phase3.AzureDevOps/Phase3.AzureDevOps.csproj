@@ -62,4 +62,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Exclude test files from main project compilation -->
+    <Compile Remove="Tests/**/*.cs" />
+  </ItemGroup>
+
 </Project>

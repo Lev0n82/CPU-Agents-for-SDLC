@@ -1,9 +1,5 @@
 using Xunit;
-using Moq;
-using Microsoft.Extensions.Logging;
 using Phase3.AzureDevOps.Services.WorkItems;
-using Phase3.AzureDevOps.Interfaces;
-using Phase3.AzureDevOps.Configuration;
 
 namespace Phase3.AzureDevOps.Tests.WorkItems;
 
@@ -79,12 +75,3 @@ public class WIQLValidatorTests
     }
 }
 
-public class WorkItemServiceTests
-{
-    // TODO: Implement WorkItemService tests
-    [Fact]
-    public void Placeholder()
-    {
-        Assert.True(true);
-    }
-}

@@ -3,6 +3,17 @@ namespace Phase3.AzureDevOps.Configuration;
 using System.Security.Cryptography.X509Certificates;
 
 /// <summary>
+/// Configuration for Personal Access Token (PAT) authentication.
+/// </summary>
+public class PATAuthenticationConfiguration
+{
+    /// <summary>
+    /// Gets or sets the Personal Access Token.
+    /// </summary>
+    public string PAT { get; set; } = string.Empty;
+}
+
+/// <summary>
 /// Configuration for certificate-based authentication.
 /// </summary>
 public class CertificateAuthenticationConfiguration

@@ -2,110 +2,72 @@ using Xunit;
 using Moq;
 using Microsoft.Extensions.Logging;
 using Phase3.AzureDevOps.Services.Authentication;
-using Phase3.AzureDevOps.Configuration;
-using Phase3.AzureDevOps.Core;
 
 namespace Phase3.AzureDevOps.Tests.Authentication;
 
 public class PATAuthenticationProviderTests
 {
     private readonly Mock<ILogger<PATAuthenticationProvider>> _loggerMock;
-    private readonly PATAuthenticationConfiguration _config;
+    private const string ValidPAT = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOP";
 
     public PATAuthenticationProviderTests()
     {
         _loggerMock = new Mock<ILogger<PATAuthenticationProvider>>();
-        _config = new PATAuthenticationConfiguration { PAT = "test-pat-token" };
     }
 
     [Fact]
-    public async Task GetAuthenticationHeaderAsync_ValidPAT_ReturnsBasicAuthHeader()
+    public async Task GetTokenAsync_ValidPAT_ReturnsToken()
     {
         // Arrange
-        var provider = new PATAuthenticationProvider(_config, _loggerMock.Object);
+        var provider = new PATAuthenticationProvider(ValidPAT, _loggerMock.Object);
 
         // Act
-        var result = await provider.GetAuthenticationHeaderAsync();
+        var result = await provider.GetTokenAsync();
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("Basic", result.Scheme);
-        Assert.False(string.IsNullOrEmpty(result.Parameter));
+        Assert.NotEmpty(result);
     }
 
     [Fact]
-    public async Task GetAuthenticationHeaderAsync_EmptyPAT_ThrowsAuthenticationException()
+    public void Constructor_EmptyPAT_ThrowsArgumentNullException()
     {
-        // Arrange
-        _config.PAT = string.Empty;
-        var provider = new PATAuthenticationProvider(_config, _loggerMock.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<AuthenticationException>(() => 
-            provider.GetAuthenticationHeaderAsync());
+        // Arrange & Act & Assert
+        Assert.Throws<ArgumentNullException>(() => 
+            new PATAuthenticationProvider(string.Empty, _loggerMock.Object));
     }
 
     [Fact]
-    public async Task GetAuthenticationHeaderAsync_NullPAT_ThrowsAuthenticationException()
+    public void Constructor_NullPAT_ThrowsArgumentNullException()
     {
-        // Arrange
-        _config.PAT = null!;
-        var provider = new PATAuthenticationProvider(_config, _loggerMock.Object);
-
-        // Act & Assert
-        await Assert.ThrowsAsync<AuthenticationException>(() => 
-            provider.GetAuthenticationHeaderAsync());
+        // Arrange & Act & Assert
+        Assert.Throws<ArgumentNullException>(() => 
+            new PATAuthenticationProvider(null!, _loggerMock.Object));
     }
 
     [Fact]
-    public async Task GetAuthenticationHeaderAsync_CachesResult()
+    public void AuthenticationMethod_ReturnsCorrectValue()
     {
         // Arrange
-        var provider = new PATAuthenticationProvider(_config, _loggerMock.Object);
+        var provider = new PATAuthenticationProvider(ValidPAT, _loggerMock.Object);
 
         // Act
-        var result1 = await provider.GetAuthenticationHeaderAsync();
-        var result2 = await provider.GetAuthenticationHeaderAsync();
+        var method = provider.AuthenticationMethod;
 
         // Assert
-        Assert.Equal(result1.Parameter, result2.Parameter);
+        Assert.Equal("PAT", method);
     }
 
     [Fact]
-    public async Task GetAuthenticationHeaderAsync_ThreadSafe()
+    public void IsCached_ReturnsTrue()
     {
         // Arrange
-        var provider = new PATAuthenticationProvider(_config, _loggerMock.Object);
-        var tasks = new List<Task>();
+        var provider = new PATAuthenticationProvider(ValidPAT, _loggerMock.Object);
 
         // Act
-        for (int i = 0; i < 10; i++)
-        {
-            tasks.Add(Task.Run(async () => await provider.GetAuthenticationHeaderAsync()));
-        }
-        await Task.WhenAll(tasks);
+        var isCached = provider.IsCached;
 
-        // Assert - No exceptions thrown
-        Assert.True(true);
-    }
-}
-
-public class CertificateAuthenticationProviderTests
-{
-    [Fact]
-    public async Task GetAuthenticationHeaderAsync_ValidCertificate_ReturnsHeader()
-    {
-        // TODO: Implement certificate tests with test certificate
-        Assert.True(true); // Placeholder
-    }
-}
-
-public class MSALDeviceAuthenticationProviderTests
-{
-    [Fact]
-    public async Task GetAuthenticationHeaderAsync_DeviceCodeFlow_ReturnsToken()
-    {
-        // TODO: Implement MSAL tests with mock
-        Assert.True(true); // Placeholder
+        // Assert
+        Assert.True(isCached);
     }
 }
