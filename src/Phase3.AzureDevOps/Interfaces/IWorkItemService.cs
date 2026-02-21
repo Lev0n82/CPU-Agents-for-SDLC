@@ -1,6 +1,6 @@
 namespace Phase3.AzureDevOps.Interfaces;
 
-using Phase3.AzureDevOps.Models;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 
 /// <summary>
 /// Provides operations for managing Azure DevOps work items.
@@ -30,12 +30,12 @@ public interface IWorkItemService
     /// <summary>
     /// Adds an attachment to a work item.
     /// </summary>
-    Task<WorkItemAttachment> AddAttachmentAsync(int workItemId, string filePath, CancellationToken cancellationToken = default);
+    Task<AttachmentReference> AddAttachmentAsync(int workItemId, string filePath, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all attachments for a work item.
     /// </summary>
-    Task<List<WorkItemAttachment>> GetAttachmentsAsync(int workItemId, CancellationToken cancellationToken = default);
+    Task<List<AttachmentReference>> GetAttachmentsAsync(int workItemId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Downloads an attachment.

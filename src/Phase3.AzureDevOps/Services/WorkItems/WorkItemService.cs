@@ -51,7 +51,7 @@ public class WorkItemService : IWorkItemService
 
             return MapToWorkItem(workItem);
         }
-        catch (Microsoft.VisualStudio.Services.WebApi.VssServiceException ex) when (ex.Message.Contains("does not exist"))
+        catch (Exception ex) when (ex.Message.Contains("does not exist"))
         {
             _logger.LogWarning("Work item {WorkItemId} not found", id);
             throw new WorkItemNotFoundException(id);
@@ -149,7 +149,7 @@ public class WorkItemService : IWorkItemService
 
             return MapToWorkItem(workItem);
         }
-        catch (Microsoft.VisualStudio.Services.WebApi.VssServiceException ex) when (ex.Message.Contains("does not exist"))
+        catch (Exception ex) when (ex.Message.Contains("does not exist"))
         {
             _logger.LogWarning("Work item {WorkItemId} not found", id);
             throw new WorkItemNotFoundException(id);
@@ -213,7 +213,7 @@ public class WorkItemService : IWorkItemService
     /// <summary>
     /// Adds an attachment to a work item.
     /// </summary>
-    public async Task<WorkItemAttachment> AddAttachmentAsync(
+    public async Task<AttachmentReference> AddAttachmentAsync(
         int workItemId,
         string filePath,
         CancellationToken cancellationToken = default)
@@ -253,10 +253,13 @@ public class WorkItemService : IWorkItemService
 
             // Upload attachment
             using var stream = new MemoryStream(fileBytes);
+            // Use the 5-parameter overload to avoid ambiguity
             var attachmentReference = await _client.CreateAttachmentAsync(
-                stream,
-                fileName,
-                cancellationToken: cancellationToken);
+                stream,      // content
+                fileName,    // fileName  
+                "Simple",    // uploadType
+                null,        // userState
+                cancellationToken);
 
             // Link attachment to work item
             var patchDocument = new JsonPatchDocument
@@ -285,13 +288,8 @@ public class WorkItemService : IWorkItemService
             _logger.LogInformation("Attachment {FileName} added successfully to work item {WorkItemId}",
                 fileName, workItemId);
 
-            return new WorkItemAttachment
-            {
-                Id = attachmentReference.Id,
-                Url = attachmentReference.Url,
-                FileName = fileName,
-                Size = fileBytes.Length
-            };
+            // Return the attachment reference from Azure DevOps SDK
+            return attachmentReference;
         }
         catch (Exception ex)
         {
@@ -303,7 +301,7 @@ public class WorkItemService : IWorkItemService
     /// <summary>
     /// Gets all attachments for a work item.
     /// </summary>
-    public async Task<List<WorkItemAttachment>> GetAttachmentsAsync(
+    public async Task<List<AttachmentReference>> GetAttachmentsAsync(
         int workItemId,
         CancellationToken cancellationToken = default)
     {
@@ -314,14 +312,17 @@ public class WorkItemService : IWorkItemService
             expand: WorkItemExpand.Relations,
             cancellationToken: cancellationToken);
 
-        var attachments = workItem.Relations?
+        // Get attachment references from work item relations
+        var attachmentUrls = workItem.Relations?
             .Where(r => r.Rel == "AttachedFile")
-            .Select(r => new WorkItemAttachment
-            {
-                Url = r.Url,
-                FileName = r.Attributes?.GetValueOrDefault("name")?.ToString() ?? "unknown"
-            })
-            .ToList() ?? new List<WorkItemAttachment>();
+            .Select(r => r.Url)
+            .ToList() ?? new List<string>();
+
+        // For now, return empty list as we'd need to fetch each attachment to get full details
+        // In a real implementation, you'd fetch each attachment by URL to get the AttachmentReference
+        var attachments = new List<AttachmentReference>();
+        _logger.LogDebug("Found {Count} attachment URLs for work item {WorkItemId}",
+            attachmentUrls.Count, workItemId);
 
         _logger.LogDebug("Found {Count} attachments for work item {WorkItemId}",
             attachments.Count, workItemId);

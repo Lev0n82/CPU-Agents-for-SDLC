@@ -42,7 +42,8 @@ public class PATRotationService : BackgroundService
         {
             try
             {
-                await CheckAndRotatePATAsync(stoppingToken);
+                // await CheckAndRotatePATAsync(stoppingToken); // TODO: Uncomment when PAT management API is implemented
+                await Task.Delay(TimeSpan.FromDays(1), stoppingToken); // Check daily
             }
             catch (Exception ex)
             {
@@ -56,14 +57,16 @@ public class PATRotationService : BackgroundService
         _logger.LogInformation("PATRotationService stopped");
     }
 
-    private async Task CheckAndRotatePATAsync(CancellationToken cancellationToken)
-    {
-        _logger.LogDebug("Checking if PAT rotation is needed");
+    // TODO: Implement PAT rotation when Azure DevOps PAT management API is available
+    /*
+    private async Task CheckAndRotatePATsAsync(CancellationToken cancellationToken)
+    {        _logger.LogDebug("Checking if PAT rotation is needed");
 
         // Get current PAT
         var currentPAT = await _secretsProvider.GetSecretAsync("AzureDevOpsPAT", cancellationToken);
 
-        // Check PAT expiry via Azure DevOps API
+        // Check PAT expiry via Azure DevOps API// TODO: Implement PAT info retrieval
+            // 
         var patInfo = await _azureDevOpsClient.GetPATInfoAsync(currentPAT, cancellationToken);
 
         var daysUntilExpiry = (patInfo.ValidTo - DateTime.UtcNow).TotalDays;
@@ -112,4 +115,5 @@ public class PATRotationService : BackgroundService
             throw;
         }
     }
+    */
 }

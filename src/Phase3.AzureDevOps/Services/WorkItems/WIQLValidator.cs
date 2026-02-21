@@ -30,6 +30,23 @@ public class WIQLValidator : IWIQLValidator
         "Custom.ProcessingAgent", "Custom.ClaimExpiry"
     };
 
+    /// <inheritdoc />
+    public bool IsValid(string wiql)
+    {
+        var result = Validate(wiql);
+        return result.IsValid;
+    }
+
+    /// <inheritdoc />
+    public void ValidateOrThrow(string wiql)
+    {
+        var result = Validate(wiql);
+        if (!result.IsValid)
+        {
+            throw new ArgumentException($"Invalid WIQL query: {string.Join(", ", result.Errors)}");
+        }
+    }
+
     /// <summary>
     /// Validates a WIQL query.
     /// </summary>
@@ -80,13 +97,4 @@ public class WIQLValidator : IWIQLValidator
             Errors = errors
         };
     }
-}
-
-/// <summary>
-/// Result of WIQL validation.
-/// </summary>
-public class WIQLValidationResult
-{
-    public bool IsValid { get; set; }
-    public List<string> Errors { get; set; } = new List<string>();
 }

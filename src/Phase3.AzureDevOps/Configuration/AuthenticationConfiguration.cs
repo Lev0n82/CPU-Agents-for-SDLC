@@ -43,6 +43,11 @@ public class CertificateAuthenticationConfiguration
 public class MSALDeviceAuthenticationConfiguration
 {
     /// <summary>
+    /// Gets or sets the scopes for authentication.
+    /// </summary>
+    public string[] Scopes { get; set; } = new[] { "499b84ac-1321-427f-aa17-267ca6975798/.default" };
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="MSALDeviceAuthenticationConfiguration"/> class.
     /// </summary>
     public MSALDeviceAuthenticationConfiguration() { }

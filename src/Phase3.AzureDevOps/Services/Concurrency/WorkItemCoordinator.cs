@@ -5,6 +5,8 @@ using Phase3.AzureDevOps.Models;
 using Phase3.AzureDevOps.Configuration;
 using Phase3.AzureDevOps.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.Services.WebApi.Patch;
+using Microsoft.VisualStudio.Services.WebApi.Patch.Json;
 using System.Text.RegularExpressions;
 
 /// <summary>
@@ -96,7 +98,7 @@ public class WorkItemCoordinator : IWorkItemCoordinator
 
         // Verify ownership before releasing
         var workItem = await _azureDevOpsClient.GetWorkItemAsync(workItemId, cancellationToken);
-        var currentOwner = workItem.Fields.GetValueOrDefault("Custom.ProcessingAgent") as string;
+        var currentOwner = (workItem.Fields.TryGetValue("Custom.ProcessingAgent", out var owner) ? owner?.ToString() : null);
 
         if (currentOwner != agentId)
         {
@@ -145,7 +147,7 @@ public class WorkItemCoordinator : IWorkItemCoordinator
 
         // Verify ownership before renewing
         var workItem = await _azureDevOpsClient.GetWorkItemAsync(workItemId, cancellationToken);
-        var currentOwner = workItem.Fields.GetValueOrDefault("Custom.ProcessingAgent") as string;
+        var currentOwner = (workItem.Fields.TryGetValue("Custom.ProcessingAgent", out var owner) ? owner?.ToString() : null);
 
         if (currentOwner != agentId)
         {
@@ -192,11 +194,11 @@ public class WorkItemCoordinator : IWorkItemCoordinator
 
         var claims = workItems.Select(wi => new WorkItemClaim
         {
-            WorkItemId = wi.Id,
-            Revision = wi.Rev,
-            AgentId = wi.Fields.GetValueOrDefault("Custom.ProcessingAgent") as string ?? string.Empty,
+            WorkItemId = wi.Id.GetValueOrDefault(),
+            Revision = wi.Rev.GetValueOrDefault(),
+            AgentId = (wi.Fields.TryGetValue("Custom.ProcessingAgent", out var agent) ? agent?.ToString() : null) ?? string.Empty,
             ClaimedAt = DateTime.UtcNow, // Not stored, approximation
-            ExpiresAt = (DateTime)(wi.Fields.GetValueOrDefault("Custom.ClaimExpiry") ?? DateTime.MinValue)
+            ExpiresAt = wi.Fields.TryGetValue("Custom.ClaimExpiry", out var expiry) && expiry != null ? (DateTime)expiry : DateTime.MinValue
         }).ToList();
 
         _logger.LogDebug("Found {Count} expired claims", claims.Count);

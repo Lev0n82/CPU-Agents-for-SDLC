@@ -4,6 +4,7 @@ using Phase3.AzureDevOps.Interfaces;
 using Phase3.AzureDevOps.Configuration;
 using Phase3.AzureDevOps.Core;
 using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.Extensions.Msal;
 using Microsoft.Extensions.Logging;
 
 /// <summary>
