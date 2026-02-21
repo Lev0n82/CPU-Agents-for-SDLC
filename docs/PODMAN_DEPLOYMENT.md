@@ -40,10 +40,10 @@ Clone the repository and navigate to the agent directory.
 # Open PowerShell
 
 # Clone the repository
-git clone https://github.com/Lev0n82/AskMarilyn.git
+git clone https://github.com/Lev0n82/CPU-Agents-for-SDLC.git
 
 # Navigate to the agent directory
-cd AskMarilyn\agent
+cd CPU-Agents-for-SDLC\agent
 ```
 
 ---
