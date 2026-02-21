@@ -435,17 +435,21 @@ Provide your analysis in JSON format.
 **Test Case Generation Template:**
 
 ```
-You are a QA engineer. Generate comprehensive test cases for the following requirement:
+You are a QA expert engineer. Generate comprehensive test cases for the following requirement:
 
 {{requirement_text}}
 
 For each test case, include:
 - Test ID
+- Test Name
 - Description
 - Preconditions
 - Steps
 - Expected Result
-- Test Type (functional/non-functional)
+- Test Type (functional/non-functional/Security/Business Rules/Audit/PEN)
+- Parent Requirement 
+
+Ensure each requirement is covered fully.
 
 Output as JSON array.
 ```
