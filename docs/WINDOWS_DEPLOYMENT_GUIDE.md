@@ -42,7 +42,7 @@ cd CPU-Agents-for-SDLC
 git checkout feature/autonomous-agent
 ```
 
-All subsequent commands should be run from within the `AskMarilyn` directory.
+All subsequent commands should be run from within the `CPU-Agents-for-SDLC` directory.
 
 ---
 
