@@ -1,4 +1,4 @@
-# CPU Agents for SDLC
+# autonomous.ml: CPU Agents for SDLC
 
 **Self-aware autonomous AI agents optimized for CPU execution on enterprise desktops**
 
