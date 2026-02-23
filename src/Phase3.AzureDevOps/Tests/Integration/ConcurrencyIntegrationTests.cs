@@ -125,14 +125,14 @@ public class ConcurrencyIntegrationTests
         int revision = 1;
         string agentId = "renewal-test-agent";
         
+        var claimTag = $"agent:{agentId}:{DateTime.UtcNow:O}:{DateTime.UtcNow.AddMinutes(5):O}";
         var workItem = new WorkItem
         {
             Id = workItemId,
             Rev = revision,
             Fields = new Dictionary<string, object>
             {
-                { "Custom.ProcessingAgent", agentId },
-                { "Custom.ClaimExpiry", DateTime.UtcNow.AddMinutes(5) }
+                { "System.Tags", claimTag }
             }
         };
         
