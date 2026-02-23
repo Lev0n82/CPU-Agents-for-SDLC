@@ -1,0 +1,116 @@
+{
+  "id": "code-review-workflow",
+  "name": "Code Review Workflow",
+  "description": "Automated workflow for AI-powered code review",
+  "version": "1.0.0",
+  "applicableWorkItemTypes": [
+    "Task",
+    "User Story"
+  ],
+  "conditions": {
+    "System.Tags": "CodeReview"
+  },
+  "defaultVariables": {
+    "reviewStatus": "In Review"
+  },
+  "steps": [
+    {
+      "id": "step1",
+      "name": "Log Start",
+      "action": "log",
+      "parameters": {
+        "message": "Starting code review for work item {{workItem.System.Id}}: {{workItem.System.Title}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    },
+    {
+      "id": "step2",
+      "name": "Update Work Item State",
+      "action": "update_work_item",
+      "parameters": {
+        "fields": {
+          "System.State": "Active",
+          "System.AssignedTo": "{{agentName}}",
+          "System.History": "[CPU Agent] Starting automated code review"
+        }
+      },
+      "continueOnError": "false",
+      "retryCount": 3,
+      "timeoutSeconds": 30
+    },
+    {
+      "id": "step3",
+      "name": "Clone Repository",
+      "action": "git_clone",
+      "parameters": {
+        "repositoryUrl": "{{workItem.Custom.RepositoryUrl}}",
+        "workspaceName": "review-workspace-{{workItem.System.Id}}"
+      },
+      "continueOnError": "false",
+      "retryCount": 2,
+      "timeoutSeconds": 120
+    },
+    {
+      "id": "step4",
+      "name": "AI Code Review",
+      "action": "ai_code_review",
+      "parameters": {
+        "code": "{{step3.workspacePath}}",
+        "context": "Review for work item: {{workItem.System.Title}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 2,
+      "timeoutSeconds": 120
+    },
+    {
+      "id": "step5",
+      "name": "Update Review Results",
+      "action": "update_work_item",
+      "parameters": {
+        "fields": {
+          "System.History": "[CPU Agent] Code review completed. AI Review: {{step4.review}}",
+          "System.Tags": "CodeReview; AI-Reviewed"
+        }
+      },
+      "continueOnError": "false",
+      "retryCount": 3,
+      "timeoutSeconds": 30
+    },
+    {
+      "id": "step6",
+      "name": "Commit Review Comments",
+      "action": "git_commit",
+      "parameters": {
+        "workspacePath": "{{step3.workspacePath}}",
+        "message": "AI Code Review: {{step4.review}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 2,
+      "timeoutSeconds": 60
+    },
+    {
+      "id": "step7",
+      "name": "Push Review Comments",
+      "action": "git_push",
+      "parameters": {
+        "workspacePath": "{{step3.workspacePath}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 2,
+      "timeoutSeconds": 60
+    },
+    {
+      "id": "step8",
+      "name": "Log Completion",
+      "action": "log",
+      "parameters": {
+        "message": "Code review completed for work item {{workItem.System.Id}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    }
+  ]
+}
