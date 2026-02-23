@@ -163,32 +163,37 @@ The methodology includes:
 ## 📚 Documentation
 
 ### Getting Started
-- [Quick Start Guide](docs/QUICKSTART.md) - Get up and running in 5 minutes
-- [Windows Deployment Guide](docs/WINDOWS_DEPLOYMENT_GUIDE.md) - Comprehensive deployment instructions
-- [Podman Deployment Guide](docs/PODMAN_DEPLOYMENT.md) - Container deployment details
+- [Windows Deployment Guide](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/WINDOWS_DEPLOYMENT_GUIDE.md) - Comprehensive deployment instructions
+- [Podman Deployment Guide](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/PODMAN_DEPLOYMENT.md) - Container deployment details
 
 ### Architecture & Design
-- [Development Methodology Guide](docs/DEVELOPMENT_METHODOLOGY.md) - **START HERE** for contributors
-- [Autonomous Agent Design](docs/autonomous_agent_design.md) - Complete desktop agent architecture
-- [Mobile Micro-Agent Design](docs/mobile_micro_agent_design.md) - Mobile agent specifications
-- [Distributed Execution Design](docs/distributed_test_execution_design.md) - Minion system architecture
-- [Self-Testing Framework](docs/self_testing_framework_design.md) - Multi-level testing approach
-- [Scheduling & Self-Awareness](docs/self_awareness_and_scheduling_design.md) - Proactive behavior design
+- [Development Methodology Guide](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/DEVELOPMENT_METHODOLOGY.md) - **START HERE** for contributors
+- [Autonomous Agent Design](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/autonomous_agent_design.md) - Complete desktop agent architecture
+- [Mobile Micro-Agent Design](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/mobile_micro_agent_design.md) - Mobile agent specifications
+- [Distributed Execution Design](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/distributed_test_execution_design.md) - Minion system architecture
+- [Self-Testing Framework](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/self_testing_framework_design.md) - Multi-level testing approach
+- [Scheduling & Self-Awareness](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/self_awareness_and_scheduling_design.md) - Proactive behavior design
 
 ### Phase 2 Implementation (LLM Integration)
-- [Phase 2 Implementation Spec](docs/phase2_implementation_spec.md) - 42-page detailed specification
-- [Phase 2 API Specification](docs/phase2_api_specifications.md) - 45-page API documentation
-- [Phase 2 Test Results](docs/PHASE2_TEST_RESULTS_REPORT.md) - Comprehensive test validation
-- [Phase 2 Final Report](docs/PHASE2_FINAL_REPORT.md) - Complete delivery summary
+- [Phase 2 Implementation Spec](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/phase2_implementation_spec.md) - 42-page detailed specification
+- [Phase 2 API Specification](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/phase2_api_specifications.md) - 45-page API documentation
+- [Phase 2 Test Results](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/PHASE2_TEST_RESULTS_REPORT.md) - Comprehensive test validation
+- [Phase 2 Final Report](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/PHASE2_FINAL_REPORT.md) - Complete delivery summary
+
+### Phase 3 Implementation (Complete Architecture)
+- [Phase 3 Completion Status](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/PHASE3_COMPLETION_STATUS.md) - **95% Production-Ready**
+- [Phase 3 Architecture Design v3](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/phase3_architecture_design_v3.md) - Complete system architecture
+- [Phase 3 Implementation Spec](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/phase3_implementation_spec.md) - Detailed specifications
+- [Phase 3 Implementation Guide](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/phase3_implementation_guide.md) - Implementation instructions
 
 ### Integration
-- [Azure DevOps Integration](docs/azure_devops_integration_summary.md) - API integration details
-- [Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md) - Technical overview
+- [Azure DevOps Integration](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/azure_devops_integration_summary.md) - API integration details
+- [Implementation Summary](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/IMPLEMENTATION_SUMMARY.md) - Technical overview
 
 ### Research
-- [Agent Architecture Research](docs/research_notes.md) - Autonomous agent patterns
-- [Intel CPU Optimization](docs/intel_cpu_findings.md) - CPU inference optimization
-- [Distributed Execution Research](docs/distributed_execution_research.md) - Test execution patterns
+- [Agent Architecture Research](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/research_notes.md) - Autonomous agent patterns
+- [Intel CPU Optimization](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/intel_cpu_findings.md) - CPU inference optimization
+- [Distributed Execution Research](https://github.com/Lev0n82/CPU-Agents-for-SDLC/blob/main/docs/distributed_execution_research.md) - Test execution patterns
 
 ---
 
