@@ -241,7 +241,7 @@ The current implementation provides the foundational architecture. Future phases
 
 ## Repository Information
 
-**GitHub Repository:** https://github.com/Lev0n82/AskMarilyn  
+**GitHub Repository:** https://github.com/Lev0n82/CPU-Agents-for-SDLC  
 **Branch:** `feature/autonomous-agent`  
 **Commit:** "Add autonomous agent implementation with self-testing and scheduling"
 
