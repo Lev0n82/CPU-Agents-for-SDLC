@@ -38,6 +38,7 @@ public class WorkflowContext
 {
     public int WorkItemId { get; set; }
     public WorkItem? WorkItem { get; set; }
+    public string WorkflowName { get; set; } = string.Empty;
     public string AgentName { get; set; } = string.Empty;
     public Dictionary<string, object> Variables { get; set; } = new();
     public Dictionary<string, object> StepOutputs { get; set; } = new();

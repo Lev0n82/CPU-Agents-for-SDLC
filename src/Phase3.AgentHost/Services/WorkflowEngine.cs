@@ -623,7 +623,7 @@ public class WorkflowEngine : IWorkflowEngine
             var code = GetParameterValue<string>(step, "code", context) ?? "";
             var reviewContext = GetParameterValue<string>(step, "context", context) ?? "";
 
-            var review = await _aiService.PerformCodeReviewAsync(code, reviewContext, cancellationToken);
+            var review = await _aiService.ReviewCodeAsync(code, "csharp", context);
 
             return new ActionResult
             {
@@ -653,7 +653,7 @@ public class WorkflowEngine : IWorkflowEngine
             var bugDescription = GetParameterValue<string>(step, "description", context) ?? "";
             var stackTrace = GetParameterValue<string>(step, "stackTrace", context) ?? "";
 
-            var analysis = await _aiService.AnalyzeRootCauseAsync(bugDescription, stackTrace, cancellationToken);
+            var analysis = await _aiService.AnalyzeRootCauseAsync(bugDescription, stackTrace, context);
 
             return new ActionResult
             {
