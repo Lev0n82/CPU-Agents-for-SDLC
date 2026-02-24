@@ -12,7 +12,9 @@ using Phase3.AzureDevOps.Services.Sync;
 using Phase3.AzureDevOps.Services.Resilience;
 using Phase3.AzureDevOps.Services.Observability;
 using Phase3.AzureDevOps.Services.Performance;
+using Phase3.AzureDevOps.Services.QA;
 using Phase3.AzureDevOps.Configuration;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -129,6 +131,15 @@ static class Program
         // Test Lifecycle & Migration
         services.AddSingleton<ITestCaseLifecycleManager, Phase3.AzureDevOps.Services.TestPlans.TestCaseLifecycleManager>();
         services.AddSingleton<IMigrationService, Phase3.AzureDevOps.Services.Migration.MigrationService>();
+        
+        // QA Dashboard Services
+        services.AddSingleton<QADashboardService>();
+        services.AddSingleton<QADataSyncService>();
+        services.AddDbContext<Phase3.AzureDevOps.Models.QA.QaCacheDbContext>(options =>
+        {
+            options.UseSqlite("Data Source=qa-cache.db");
+        });
+        services.AddHostedService<QAMetricsExporterService>();
     }
 
     private static IHostBuilder ConfigureOpenTelemetry(this IHostBuilder builder, IConfiguration configuration)
@@ -152,8 +163,8 @@ static class Program
                         .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)))
                     .WithMetrics(metrics => metrics
                         .AddMeter(serviceName)
+                        .AddMeter("Phase3.AzureDevOps.QAMetrics")  // QA metrics meter
                         .AddRuntimeInstrumentation()
-                        // Note: AddProcessInstrumentation not available in OpenTelemetry 1.7.0
                         .AddOtlpExporter(options => options.Endpoint = new Uri(otlpEndpoint)));
             });
         }

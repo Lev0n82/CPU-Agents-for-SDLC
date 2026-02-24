@@ -27,8 +27,6 @@ public static class OpenTelemetryConfiguration
                 .AddMeter(serviceName)
                 .AddHttpClientInstrumentation()
                 .AddAspNetCoreInstrumentation()
-                .AddRuntimeInstrumentation()
-                .AddProcessInstrumentation()
                 .AddOtlpExporter(opt =>
                 {
                     opt.Endpoint = new Uri(collectorEndpoint);
