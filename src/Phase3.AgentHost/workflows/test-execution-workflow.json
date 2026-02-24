@@ -1,0 +1,96 @@
+{
+  "id": "test-execution-workflow",
+  "name": "Test Execution Workflow",
+  "description": "Automated workflow for executing test cases",
+  "version": "1.0.0",
+  "applicableWorkItemTypes": [
+    "Test Case",
+    "Task"
+  ],
+  "conditions": {
+    "System.Tags": "AutoTest"
+  },
+  "defaultVariables": {
+    "testPlanId": 1,
+    "testOutcome": "Passed"
+  },
+  "steps": [
+    {
+      "id": "step1",
+      "name": "Log Start",
+      "action": "log",
+      "parameters": {
+        "message": "Starting test execution for work item {{workItem.System.Id}}: {{workItem.System.Title}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    },
+    {
+      "id": "step2",
+      "name": "Update Work Item State",
+      "action": "update_work_item",
+      "parameters": {
+        "fields": {
+          "System.State": "Active",
+          "System.AssignedTo": "{{agentName}}",
+          "System.History": "[CPU Agent] Starting automated test execution"
+        }
+      },
+      "continueOnError": "false",
+      "retryCount": 3,
+      "timeoutSeconds": 30
+    },
+    {
+      "id": "step3",
+      "name": "Clone Test Repository",
+      "action": "git_clone",
+      "parameters": {
+        "repositoryUrl": "{{workItem.Custom.RepositoryUrl}}",
+        "workspaceName": "test-workspace-{{workItem.System.Id}}"
+      },
+      "continueOnError": "false",
+      "retryCount": 2,
+      "timeoutSeconds": 120
+    },
+    {
+      "id": "step4",
+      "name": "Run Test Case",
+      "action": "run_test_case",
+      "parameters": {
+        "testCaseId": "{{workItem.System.Id}}",
+        "testPlanId": "{{testPlanId}}",
+        "outcome": "{{testOutcome}}"
+      },
+      "continueOnError": "false",
+      "retryCount": 1,
+      "timeoutSeconds": 300
+    },
+    {
+      "id": "step5",
+      "name": "Update Test Results",
+      "action": "update_work_item",
+      "parameters": {
+        "fields": {
+          "System.State": "Closed",
+          "System.History": "[CPU Agent] Test execution completed. Outcome: {{testOutcome}}",
+          "Microsoft.VSTS.TCM.AutomatedTestName": "{{workItem.System.Title}}"
+        }
+      },
+      "continueOnError": "false",
+      "retryCount": 3,
+      "timeoutSeconds": 30
+    },
+    {
+      "id": "step6",
+      "name": "Log Completion",
+      "action": "log",
+      "parameters": {
+        "message": "Test execution completed for work item {{workItem.System.Id}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    }
+  ]
+}

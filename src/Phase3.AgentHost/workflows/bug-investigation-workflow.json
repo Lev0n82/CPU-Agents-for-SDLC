@@ -1,0 +1,90 @@
+{
+  "id": "bug-investigation-workflow",
+  "name": "Bug Investigation Workflow",
+  "description": "Automated workflow for investigating and analyzing bugs",
+  "version": "1.0.0",
+  "applicableWorkItemTypes": [
+    "Bug"
+  ],
+  "conditions": {},
+  "defaultVariables": {
+    "investigationStatus": "In Progress"
+  },
+  "steps": [
+    {
+      "id": "step1",
+      "name": "Log Start",
+      "action": "log",
+      "parameters": {
+        "message": "Starting bug investigation for work item {{workItem.System.Id}}: {{workItem.System.Title}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    },
+    {
+      "id": "step2",
+      "name": "Update Work Item State",
+      "action": "update_work_item",
+      "parameters": {
+        "fields": {
+          "System.State": "Active",
+          "System.AssignedTo": "{{agentName}}",
+          "System.History": "[CPU Agent] Starting automated bug investigation"
+        }
+      },
+      "continueOnError": "false",
+      "retryCount": 3,
+      "timeoutSeconds": 30
+    },
+    {
+      "id": "step3",
+      "name": "Extract Bug Details",
+      "action": "set_variable",
+      "parameters": {
+        "name": "bugDescription",
+        "value": "{{workItem.System.Description}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    },
+    {
+      "id": "step4",
+      "name": "AI Root Cause Analysis",
+      "action": "ai_root_cause_analysis",
+      "parameters": {
+        "description": "{{bugDescription}}",
+        "stackTrace": "{{workItem.Microsoft.VSTS.TCM.ReproSteps}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 2,
+      "timeoutSeconds": 60
+    },
+    {
+      "id": "step5",
+      "name": "Update Investigation Results",
+      "action": "update_work_item",
+      "parameters": {
+        "fields": {
+          "System.History": "[CPU Agent] Investigation completed. AI Analysis: {{step4.analysis}}",
+          "System.Tags": "Investigated; AI-Analyzed"
+        }
+      },
+      "continueOnError": "false",
+      "retryCount": 3,
+      "timeoutSeconds": 30
+    },
+    {
+      "id": "step6",
+      "name": "Log Completion",
+      "action": "log",
+      "parameters": {
+        "message": "Bug investigation completed for work item {{workItem.System.Id}}"
+      },
+      "continueOnError": "true",
+      "retryCount": 0,
+      "timeoutSeconds": 10
+    }
+  ]
+}

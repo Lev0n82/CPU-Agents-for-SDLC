@@ -47,19 +47,15 @@ public class WorkItemCoordinator : IWorkItemCoordinator
         {
             var claimExpiry = DateTime.UtcNow.AddMinutes(_config.ClaimDurationMinutes);
 
+            var claimTag = $"agent:{agentId}:{DateTime.UtcNow:O}:{claimExpiry:O}";
+
             var patch = new JsonPatchDocument
             {
                 new JsonPatchOperation
                 {
                     Operation = Operation.Add,
-                    Path = "/fields/Custom.ProcessingAgent",
-                    Value = agentId
-                },
-                new JsonPatchOperation
-                {
-                    Operation = Operation.Add,
-                    Path = "/fields/Custom.ClaimExpiry",
-                    Value = claimExpiry
+                    Path = "/fields/System.Tags",
+                    Value = claimTag
                 }
             };
 
@@ -98,7 +94,8 @@ public class WorkItemCoordinator : IWorkItemCoordinator
 
         // Verify ownership before releasing
         var workItem = await _azureDevOpsClient.GetWorkItemAsync(workItemId, cancellationToken);
-        var currentOwner = (workItem.Fields.TryGetValue("Custom.ProcessingAgent", out var owner) ? owner?.ToString() : null);
+        var tags = workItem.Fields.TryGetValue("System.Tags", out var tagsValue) ? tagsValue?.ToString() : null;
+        var currentOwner = ExtractAgentIdFromTags(tags);
 
         if (currentOwner != agentId)
         {
@@ -107,17 +104,24 @@ public class WorkItemCoordinator : IWorkItemCoordinator
             return;
         }
 
+        // Remove the agent claim tag
+        var claimTag = tags?.Split(';').FirstOrDefault(t => t.Trim().StartsWith($"agent:{agentId}:"));
+        if (claimTag == null)
+        {
+            _logger.LogWarning("No claim tag found for agent {AgentId} on work item {WorkItemId}",
+                agentId, workItemId);
+            return;
+        }
+
+        var remainingTags = string.Join(";", tags.Split(';').Where(t => t.Trim() != claimTag.Trim()));
+
         var patch = new JsonPatchDocument
         {
             new JsonPatchOperation
             {
-                Operation = Operation.Remove,
-                Path = "/fields/Custom.ProcessingAgent"
-            },
-            new JsonPatchOperation
-            {
-                Operation = Operation.Remove,
-                Path = "/fields/Custom.ClaimExpiry"
+                Operation = Operation.Add,
+                Path = "/fields/System.Tags",
+                Value = remainingTags
             }
         };
 
@@ -147,7 +151,8 @@ public class WorkItemCoordinator : IWorkItemCoordinator
 
         // Verify ownership before renewing
         var workItem = await _azureDevOpsClient.GetWorkItemAsync(workItemId, cancellationToken);
-        var currentOwner = (workItem.Fields.TryGetValue("Custom.ProcessingAgent", out var owner) ? owner?.ToString() : null);
+        var tags = workItem.Fields.TryGetValue("System.Tags", out var tagsValue) ? tagsValue?.ToString() : null;
+        var currentOwner = ExtractAgentIdFromTags(tags);
 
         if (currentOwner != agentId)
         {
@@ -155,15 +160,23 @@ public class WorkItemCoordinator : IWorkItemCoordinator
                 $"Agent {agentId} cannot renew claim on work item {workItemId}: owned by {currentOwner}");
         }
 
+        // Remove old claim tag and add new one with updated expiry
+        var oldClaimTag = tags?.Split(';').FirstOrDefault(t => t.Trim().StartsWith($"agent:{agentId}:"));
+        var remainingTags = oldClaimTag != null 
+            ? string.Join(";", tags.Split(';').Where(t => t.Trim() != oldClaimTag.Trim()))
+            : tags;
+
         var newExpiry = DateTime.UtcNow.AddMinutes(_config.ClaimDurationMinutes);
+        var newClaimTag = $"agent:{agentId}:{DateTime.UtcNow:O}:{newExpiry:O}";
+        var updatedTags = string.IsNullOrEmpty(remainingTags) ? newClaimTag : $"{remainingTags};{newClaimTag}";
 
         var patch = new JsonPatchDocument
         {
             new JsonPatchOperation
             {
                 Operation = Operation.Add,
-                Path = "/fields/Custom.ClaimExpiry",
-                Value = newExpiry
+                Path = "/fields/System.Tags",
+                Value = updatedTags
             }
         };
 
@@ -186,20 +199,31 @@ public class WorkItemCoordinator : IWorkItemCoordinator
         _logger.LogDebug("Querying for expired claims");
 
         var wiql = $@"
-            SELECT [System.Id], [System.Rev], [Custom.ProcessingAgent], [Custom.ClaimExpiry]
+            SELECT [System.Id], [System.Rev], [System.Tags]
             FROM WorkItems
-            WHERE [Custom.ClaimExpiry] < '{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}'";
+            WHERE [System.Tags] CONTAINS 'agent:'";
 
         var workItems = await _azureDevOpsClient.QueryWorkItemsAsync(wiql, cancellationToken);
 
-        var claims = workItems.Select(wi => new WorkItemClaim
+        var claims = new List<WorkItemClaim>();
+
+        foreach (var wi in workItems)
         {
-            WorkItemId = wi.Id.GetValueOrDefault(),
-            Revision = wi.Rev.GetValueOrDefault(),
-            AgentId = (wi.Fields.TryGetValue("Custom.ProcessingAgent", out var agent) ? agent?.ToString() : null) ?? string.Empty,
-            ClaimedAt = DateTime.UtcNow, // Not stored, approximation
-            ExpiresAt = wi.Fields.TryGetValue("Custom.ClaimExpiry", out var expiry) && expiry != null ? (DateTime)expiry : DateTime.MinValue
-        }).ToList();
+            var tags = wi.Fields.TryGetValue("System.Tags", out var tagsValue) ? tagsValue?.ToString() : null;
+            var claimInfo = ParseClaimFromTags(tags);
+
+            if (claimInfo != null && claimInfo.Value.ExpiresAt < DateTime.UtcNow)
+            {
+                claims.Add(new WorkItemClaim
+                {
+                    WorkItemId = wi.Id.GetValueOrDefault(),
+                    Revision = wi.Rev.GetValueOrDefault(),
+                    AgentId = claimInfo.Value.AgentId,
+                    ClaimedAt = claimInfo.Value.ClaimedAt,
+                    ExpiresAt = claimInfo.Value.ExpiresAt
+                });
+            }
+        }
 
         _logger.LogDebug("Found {Count} expired claims", claims.Count);
 
@@ -244,5 +268,46 @@ public class WorkItemCoordinator : IWorkItemCoordinator
             throw new ArgumentException(
                 "Agent ID must be 3-50 alphanumeric characters (hyphens allowed).",
                 nameof(agentId));
+    }
+
+    /// <summary>
+    /// Extracts the agent ID from work item tags.
+    /// </summary>
+    private string? ExtractAgentIdFromTags(string? tags)
+    {
+        if (string.IsNullOrWhiteSpace(tags))
+            return null;
+
+        var claimTag = tags.Split(';').FirstOrDefault(t => t.Trim().StartsWith("agent:"));
+        if (claimTag == null)
+            return null;
+
+        var parts = claimTag.Trim().Split(':');
+        return parts.Length >= 2 ? parts[1] : null;
+    }
+
+    /// <summary>
+    /// Parses claim information from work item tags.
+    /// </summary>
+    private (string AgentId, DateTime ClaimedAt, DateTime ExpiresAt)? ParseClaimFromTags(string? tags)
+    {
+        if (string.IsNullOrWhiteSpace(tags))
+            return null;
+
+        var claimTag = tags.Split(';').FirstOrDefault(t => t.Trim().StartsWith("agent:"));
+        if (claimTag == null)
+            return null;
+
+        var parts = claimTag.Trim().Split(':');
+        if (parts.Length < 4)
+            return null;
+
+        if (!DateTime.TryParse(parts[2], out var claimedAt))
+            return null;
+
+        if (!DateTime.TryParse(parts[3], out var expiresAt))
+            return null;
+
+        return (parts[1], claimedAt, expiresAt);
     }
 }

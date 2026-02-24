@@ -1,0 +1,451 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Swiss Modernism Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  /* Swiss Modernism Color Palette - Deep Blue Accent */
+  --primary: oklch(0.45 0.15 250); /* Deep blue */
+  --primary-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.45 0.15 250);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  
+  /* Neutral Grays */
+  --background: oklch(0.98 0 0); /* Almost white */
+  --foreground: oklch(0.15 0 0); /* Almost black */
+  --card: oklch(1 0 0); /* Pure white */
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  
+  /* Secondary Colors */
+  --secondary: oklch(0.92 0 0);
+  --secondary-foreground: oklch(0.15 0 0);
+  --muted: oklch(0.95 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+  --accent: oklch(0.88 0 0);
+  --accent-foreground: oklch(0.15 0 0);
+  
+  /* Borders */
+  --border: oklch(0.85 0 0);
+  --input: oklch(0.85 0 0);
+  --ring: oklch(0.45 0.15 250);
+  
+  /* Destructive */
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  
+  /* Charts - Blue gradient */
+  --chart-1: oklch(0.65 0.15 250);
+  --chart-2: oklch(0.55 0.15 250);
+  --chart-3: oklch(0.45 0.15 250);
+  --chart-4: oklch(0.35 0.15 250);
+  --chart-5: oklch(0.25 0.15 250);
+  
+  /* Sidebar */
+  --sidebar: oklch(1 0 0);
+  --sidebar-foreground: oklch(0.15 0 0);
+  --sidebar-accent: oklch(0.95 0 0);
+  --sidebar-accent-foreground: oklch(0.15 0 0);
+  --sidebar-border: oklch(0.85 0 0);
+  --sidebar-ring: oklch(0.45 0.15 250);
+  
+  /* No border radius - Swiss Modernism */
+  --radius: 0;
+}
+
+.dark {
+  --primary: oklch(0.65 0.15 250);
+  --primary-foreground: oklch(0.98 0 0);
+  --background: oklch(0.12 0 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.15 0 0);
+  --card-foreground: oklch(0.95 0 0);
+  --popover: oklch(0.15 0 0);
+  --popover-foreground: oklch(0.95 0 0);
+  --secondary: oklch(0.2 0 0);
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.6 0 0);
+  --accent: oklch(0.22 0 0);
+  --accent-foreground: oklch(0.95 0 0);
+  --border: oklch(0.25 0 0);
+  --input: oklch(0.25 0 0);
+  --ring: oklch(0.65 0.15 250);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 3rem;
+      padding-right: 3rem;
+      max-width: 1400px;
+    }
+  }
+  
+  /* Swiss Modernism Grid System - 8px base */
+  .grid-swiss {
+    display: grid;
+    gap: 2rem; /* 32px = 4 * 8px */
+  }
+  
+  /* Diagonal Section Divider */
+  .diagonal-section {
+    position: relative;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 4rem), 0 100%);
+    padding-bottom: 6rem;
+  }
+  
+  .diagonal-section-reverse {
+    position: relative;
+    clip-path: polygon(0 4rem, 100% 0, 100% 100%, 0 100%);
+    padding-top: 6rem;
+  }
+  
+  /* Data Visualization Card */
+  .data-card {
+    @apply bg-card border-2 border-border p-8 relative overflow-hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .data-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .data-card:hover::before {
+    transform: scaleY(1);
+  }
+  
+  .data-card:hover {
+    @apply border-primary;
+    transform: translateX(4px);
+  }
+  
+  /* Metric Display */
+  .metric {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--primary);
+  }
+  
+  /* Label Typography */
+  .label-swiss {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted-foreground);
+  }
+  
+  /* Asymmetric Grid Layouts */
+  .grid-asymmetric-1 {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+  
+  .grid-asymmetric-2 {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 2rem;
+  }
+  
+  @media (max-width: 768px) {
+    .grid-asymmetric-1,
+    .grid-asymmetric-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+/* Swiss Modernism Animation - Precise, Mathematical */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==============================================
+   WCAG 2.2 AAA Accessibility Enhancements
+   ============================================== */
+
+/* Skip Navigation Link for Keyboard Users */
+.skip-nav {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 9999;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  transform: translateY(-200%);
+  transition: transform 0.3s ease;
+}
+
+.skip-nav:focus {
+  transform: translateY(0);
+}
+
+/* Enhanced Focus Indicators (AAA Requirement) */
+*:focus-visible {
+  outline: 4px solid var(--ring);
+  outline-offset: 4px;
+}
+
+/* Minimum Touch Target Size: 44x44px (AAA Requirement) */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+[role="link"] {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Respect Reduced Motion Preference (AAA Requirement) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --foreground: oklch(0 0 0); /* Pure black */
+    --background: oklch(1 0 0); /* Pure white */
+    --primary: oklch(0.35 0.15 250); /* Darker blue */
+    --border: oklch(0 0 0); /* Black borders */
+  }
+}
+
+/* Screen Reader Only Content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focus Ring Utility */
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  outline: 4px solid var(--ring);
+  outline-offset: 4px;
+}
+
+/* Accessible Link Styles */
+.link-accessible {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.link-accessible:hover {
+  text-decoration-color: var(--primary);
+}
+
+.link-accessible:focus-visible {
+  outline: 4px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ARIA Live Region Styles */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  position: relative;
+}
+
+/* Ensure Proper Heading Hierarchy */
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+h4 {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+h5 {
+  font-size: clamp(1.125rem, 2vw, 1.5rem);
+}
+
+h6 {
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+}
