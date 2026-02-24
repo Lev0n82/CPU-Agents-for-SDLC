@@ -56,7 +56,7 @@ static class Program
                     services.Configure<AgentConfiguration>(configuration.GetSection("Agent"));
                     services.Configure<ResilienceConfiguration>(configuration.GetSection("Resilience"));
                     services.Configure<TelemetryConfiguration>(configuration.GetSection("Telemetry"));
-                    services.Configure<DPAPIConfiguration>(configuration.GetSection("Secrets:DPAPI"));
+                    services.Configure<KeyVaultConfiguration>(configuration.GetSection("Secrets:AzureKeyVault"));
 
                     // Register Phase 3 services
                     RegisterPhase3Services(services, configuration);
@@ -94,10 +94,13 @@ static class Program
         {
             services.AddSingleton<IAuthenticationProvider>(sp =>
             {
+                var secretsProvider = sp.GetRequiredService<ISecretsProvider>();
                 var logger = sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<PATAuthenticationProvider>>();
+                var cacheToken = configuration.GetValue<bool>("AzureDevOps:CacheToken", true); // Default to true for lazy retrieval
                 return new PATAuthenticationProvider(
-                    configuration["AzureDevOps:PAT"]!,
-                    logger);
+                    secretsProvider,
+                    logger,
+                    cacheToken);
             });
         }
         // Note: MSAL and Certificate authentication providers can be added when implemented
