@@ -216,6 +216,211 @@ See the [Windows Deployment Guide](docs/WINDOWS_DEPLOYMENT_GUIDE.md) for detaile
 - Monthly model retraining with updated datasets
 - 90%+ element classification accuracy, 95%+ test generation success rate
 
+---
+
+## 🤖 AI Capabilities Demo
+
+All AI capabilities run **100% locally** via vLLM (production) or Ollama (development) with zero cloud dependencies. Below are 5 concrete examples of what the local AI models can do:
+
+### 1. AI Code Review (Granite 4 - 8B parameters)
+
+**Input:**
+```csharp
+public class UserService {
+    public User GetUser(int id) {
+        var user = db.Users.Find(id);
+        return user;
+    }
+}
+```
+
+**AI Analysis Output:**
+```json
+{
+  "score": 6.5,
+  "issues": [
+    { "severity": "warning", "message": "Missing null check - Find() can return null", "line": 3 },
+    { "severity": "info", "message": "Consider async/await for database operations", "line": 2 },
+    { "severity": "info", "message": "Add XML documentation for public methods", "line": 2 }
+  ],
+  "suggestions": [
+    "Add null validation before returning user",
+    "Convert to async Task<User> GetUserAsync(int id)",
+    "Add logging for user retrieval operations"
+  ]
+}
+```
+
+### 2. Test Case Development from Requirements (Granite 4 - 8B parameters)
+
+**Input:**
+```
+User Story: "As a customer, I want to apply discount codes at checkout 
+so that I can save money on my purchase"
+
+Acceptance Criteria:
+- System validates discount code format (alphanumeric, 6-12 chars)
+- Valid codes reduce order total by specified percentage
+- Invalid codes show error message
+- Expired codes are rejected
+- One discount per order limit enforced
+- Discount applied before tax calculation
+```
+
+**AI Generated Test Cases:**
+```json
+{
+  "testCases": [
+    {
+      "id": "TC-001",
+      "title": "Valid discount code reduces order total",
+      "priority": "High",
+      "type": "Functional",
+      "steps": [
+        "Add items to cart (total: $100)",
+        "Navigate to checkout",
+        "Enter valid discount code 'SAVE20' (20% off)",
+        "Click 'Apply Discount'"
+      ],
+      "expected": "Order total reduced to $80, discount line item shows -$20"
+    },
+    {
+      "id": "TC-002",
+      "title": "Invalid discount code shows error message",
+      "priority": "High",
+      "type": "Negative",
+      "expected": "Error message: 'Discount code not found', order total unchanged"
+    },
+    {
+      "id": "TC-003",
+      "title": "Expired discount code is rejected",
+      "priority": "Medium",
+      "type": "Boundary"
+    },
+    {
+      "id": "TC-004",
+      "title": "Discount code format validation",
+      "priority": "Medium",
+      "type": "Validation"
+    },
+    {
+      "id": "TC-005",
+      "title": "Multiple discount codes rejected",
+      "priority": "High",
+      "type": "Business Rule"
+    },
+    {
+      "id": "TC-006",
+      "title": "Discount applied before tax calculation",
+      "priority": "High",
+      "type": "Integration",
+      "expected": "Subtotal: $100, Discount: -$20, Tax: $8 (10% of $80), Total: $88"
+    }
+  ],
+  "coverage": {
+    "functional": 4,
+    "negative": 1,
+    "boundary": 1,
+    "validation": 1,
+    "businessRule": 1,
+    "integration": 1
+  },
+  "clarifyingQuestions": [
+    "Should discount codes be case-sensitive?",
+    "What happens if discount exceeds order total (100% off)?",
+    "Can discount codes be combined with other promotions?",
+    "Should system log discount code usage for analytics?"
+  ]
+}
+```
+
+**Key Insights:**
+- Generated **6 comprehensive test cases** covering functional, negative, boundary, validation, business rule, and integration scenarios
+- Identified **4 clarifying questions** to improve requirement clarity before development
+- Coverage analysis shows balanced test distribution across all test types
+
+### 3. Test Obsolescence Detection (Phi-3 - 3.8B parameters)
+
+**Input:**
+```
+Test: "Should validate user email format"
+Code: Email validation removed, now using OAuth only
+Last Modified: 180 days ago
+Pass Rate: 100% (but testing obsolete code path)
+```
+
+**AI Analysis:**
+```json
+{
+  "obsolete": true,
+  "confidence": 0.92,
+  "reasons": [
+    "Code path no longer exists in current implementation",
+    "Requirements changed to OAuth-only authentication",
+    "Test hasn't been updated in 6 months despite code changes"
+  ],
+  "recommendation": "Archive or rewrite test to validate OAuth flow instead"
+}
+```
+
+### 4. Merge Conflict Resolution (Llama 3 - 8B parameters)
+
+**Input:**
+```diff
+<<<<<<< HEAD
+public void ProcessOrder(Order order) {
+    ValidateOrder(order);
+    CalculateTotal(order);
+    SaveOrder(order);
+}
+=======
+public async Task ProcessOrderAsync(Order order) {
+    await ValidateOrderAsync(order);
+    await CalculateTotalAsync(order);
+    await SaveOrderAsync(order);
+}
+>>>>>>> feature/async-refactor
+```
+
+**AI Resolution:**
+```json
+{
+  "resolution": "accept_incoming",
+  "confidence": 0.95,
+  "reasoning": "Incoming branch uses async/await pattern, which is consistent with 87% of codebase methods. Modern best practice for I/O operations.",
+  "suggestedCode": "public async Task ProcessOrderAsync(Order order) {\n    await ValidateOrderAsync(order);\n    await CalculateTotalAsync(order);\n    await SaveOrderAsync(order);\n}"
+}
+```
+
+### 5. Root Cause Analysis (Granite 4 - 8B parameters)
+
+**Input:**
+```
+Bug: "Application crashes when processing large orders"
+Stack Trace: NullReferenceException at OrderProcessor.CalculateTotal()
+Recent Changes: Added discount calculation feature
+Test Failures: 3/45 integration tests failing
+Error Pattern: Only occurs with orders >$10,000
+```
+
+**AI Analysis:**
+```json
+{
+  "rootCause": "Null reference in discount calculation for high-value orders",
+  "confidence": 0.88,
+  "analysis": [
+    "Discount calculation assumes DiscountTier is always set",
+    "High-value orders (>$10k) use different pricing tier logic",
+    "New discount feature didn't account for premium tier edge case"
+  ],
+  "suggestedFix": "// Add null check before discount calculation\nif (order.DiscountTier != null) {\n    discount = CalculateDiscount(order);\n} else {\n    discount = 0; // Premium tier uses different pricing\n}",
+  "relatedIssues": [
+    "Similar pattern in ShippingCalculator.cs (line 45)",
+    "Consider adding tier validation in Order constructor"
+  ]
+}
+```
+
 **Testing & Automation:**
 - Playwright for E2E testing
 - LibGit2Sharp for Git operations
