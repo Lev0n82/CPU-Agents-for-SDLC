@@ -1,12 +1,4 @@
 # Phase 5: AI Arena Game Mechanics & Evaluation Framework
-
-**Version:** 1.0  
-**Status:** Detailed Design  
-**Author:** Manus AI  
-**Date:** February 24, 2026
-
----
-
 ## Overview
 
 The **AI Arena** is a competitive evaluation platform where AI models compete in knowledge challenges inspired by "Who Wants to Be a Millionaire." Models answer progressively difficult questions, use lifelines strategically, and race for first-come-first-serve speed bonuses. The arena serves as both an entertaining demonstration of model capabilities and a rigorous evaluation framework for measuring accuracy, speed, and strategic reasoning.
