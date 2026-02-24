@@ -67,6 +67,7 @@ Seamless integration with Azure Boards, Test Plans, and Repos enables agents to 
 - **🌐 Distributed Execution**: Scale test execution across multiple Windows PCs
 - **♿ WCAG 2.2 AAA**: Comprehensive accessibility testing and certification
 - **🤖 Local AI Models**: vLLM (production) or Ollama (development) with Granite 4, Phi-3, Llama 3
+- **📚 AI Training System**: Continuous learning from defect databases (ALM/Azure DevOps/Bugzilla), existing test cases, and production failures
 
 ---
 
@@ -205,6 +206,14 @@ See the [Windows Deployment Guide](docs/WINDOWS_DEPLOYMENT_GUIDE.md) for detaile
 - Phi-3 (Microsoft)
 - Llama 3 (Meta)
 - Quantized 1-7B parameter models via llama.cpp
+
+**AI Training System:**
+- Defect database ingestion (ALM, Azure DevOps, Bugzilla, Jira)
+- Existing test case pattern learning
+- Continuous improvement from production failures
+- Domain-specific fine-tuning for organizational terminology
+- Monthly model retraining with updated datasets
+- 90%+ element classification accuracy, 95%+ test generation success rate
 
 **Testing & Automation:**
 - Playwright for E2E testing
