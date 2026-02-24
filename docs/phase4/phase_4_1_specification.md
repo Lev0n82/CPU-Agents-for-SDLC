@@ -3,7 +3,6 @@
 
 **Document Version:** 1.0  
 **Date:** 2026-02-23  
-**Author:** Manus AI  
 **Status:** Final Specification  
 **Phase:** 4.1 (Automated Test Generation Prerequisites)
 
