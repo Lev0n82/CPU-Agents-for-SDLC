@@ -1,0 +1,83 @@
+groups:
+  - name: autonomous-agent-alerts
+    rules:
+      - alert: HighMemoryUsage
+        expr: memory_usage > 500
+        for: 5m
+        labels:
+          severity: warning
+          service: autonomous-agent
+        annotations:
+          summary: "High memory usage detected on Autonomous Agent"
+          description: "Autonomous Agent memory usage is above 500MB for more than 5 minutes"
+
+      - alert: HighCpuUsage
+        expr: cpu_usage > 80
+        for: 2m
+        labels:
+          severity: warning
+          service: autonomous-agent
+        annotations:
+          summary: "High CPU usage detected on Autonomous Agent"
+          description: "Autonomous Agent CPU usage is above 80% for more than 2 minutes"
+
+      - alert: TaskProcessingFailure
+        expr: rate(tasks_executed_total[10m]) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          service: autonomous-agent
+        annotations:
+          summary: "Low task processing rate detected"
+          description: "Autonomous Agent processing rate is below 0.1 tasks per second for 5 minutes"
+
+      - alert: SelfTestFailures
+        expr: rate(selftests_completed_total[10m]) == 0
+        for: 10m
+        labels:
+          severity: critical
+          service: autonomous-agent
+        annotations:
+          summary: "No self-tests have completed recently"
+          description: "No self-tests have been completed in the last 10 minutes"
+
+  - name: azure-devops-alerts
+    rules:
+      - alert: APIHighResponseTime
+        expr: rate(api_response_time_sum[5m]) / rate(api_response_time_count[5m]) > 2000
+        for: 3m
+        labels:
+          severity: warning
+          service: azure-devops-agent
+        annotations:
+          summary: "High API response time detected"
+          description: "Azure DevOps API response time is above 2000ms for more than 3 minutes"
+
+      - alert: WorkItemProcessingFailure
+        expr: rate(workitems_processed_total[10m]) < 0.05
+        for: 5m
+        labels:
+          severity: critical
+          service: azure-devops-agent
+        annotations:
+          summary: "Low work item processing rate"
+          description: "Azure DevOps Agent processing rate is below 0.05 work items per second for 5 minutes"
+
+      - alert: AuthenticationFailures
+        expr: sum(rate(authentication_failures_total[5m])) / sum(rate(authentication_attempts_total[5m])) > 0.5
+        for: 2m
+        labels:
+          severity: critical
+          service: azure-devops-agent
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Azure DevOps Agent authentication failure rate is above 50% for 2 minutes"
+
+      - alert: ServiceDown
+        expr: up{job=~"autonomous-agent|azure-devops-agent"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute"

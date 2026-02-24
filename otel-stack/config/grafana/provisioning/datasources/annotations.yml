@@ -1,0 +1,26 @@
+apiVersion: 1
+
+# Delete annotations sources to ensure idempotent configuration
+deleteAnnotations:
+  - name: Prometheus
+    orgId: 1
+
+# Configures annotation sources
+annotations:
+  - name: Prometheus Annotations
+    type: dashboard
+    orgId: 1
+    # Source of the annotations
+    datasource: "Prometheus"
+    # Determines whether to show annotations or not
+    enable: true
+    # Query for annotations
+    target:
+      expr: 'ALERTS{alertstate="firing"}'
+      # Optionally customize the field mappings
+      step: "30s"
+    # Control annotation appearance
+    color: "red"
+    iconColor: "red"
+    # Tags to match annotations
+    tags: ["alert"]
