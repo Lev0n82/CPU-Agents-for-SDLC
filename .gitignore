@@ -126,3 +126,7 @@ secrets.json
 publish/
 *.tar
 *.tar.gz
+
+# Local Data and Databases
+*.db
+project-data/

@@ -15,7 +15,8 @@ public class PATAuthenticationProvider : IAuthenticationProvider
     private readonly ILogger<PATAuthenticationProvider> _logger;
     private readonly bool _cacheToken;
     private readonly Lazy<Task<string>>? _cachedPatTask;
-    private static readonly Regex PATPattern = new Regex(@"^[a-z0-9]{52}$", RegexOptions.IgnoreCase);
+    // Azure DevOps PATs can be 52 chars (old format) or 76+ chars (new format with base64 encoding)
+    private static readonly Regex PATPattern = new Regex(@"^[a-z0-9]{52,}$", RegexOptions.IgnoreCase);
 
     public string AuthenticationMethod => "PAT";
     public bool IsCached => _cacheToken;
@@ -45,7 +46,7 @@ public class PATAuthenticationProvider : IAuthenticationProvider
                     throw new ArgumentNullException(nameof(pat), "PAT cannot be null or empty.");
 
                 if (!PATPattern.IsMatch(pat))
-                    throw new ArgumentException("PAT format is invalid. Expected 52 alphanumeric characters.", nameof(pat));
+                    throw new ArgumentException("PAT format is invalid. Expected 52+ alphanumeric characters.", nameof(pat));
 
                 return pat;
             });
@@ -74,7 +75,7 @@ public class PATAuthenticationProvider : IAuthenticationProvider
             throw new ArgumentNullException(nameof(pat), "PAT cannot be null or empty.");
 
         if (!PATPattern.IsMatch(pat))
-            throw new ArgumentException("PAT format is invalid. Expected 52 alphanumeric characters.", nameof(pat));
+            throw new ArgumentException("PAT format is invalid. Expected 52+ alphanumeric characters.", nameof(pat));
 
         _logger.LogDebug("PAT token retrieved successfully");
         return pat;

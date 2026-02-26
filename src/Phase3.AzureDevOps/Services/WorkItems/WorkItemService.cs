@@ -69,7 +69,7 @@ public class WorkItemService : IWorkItemService
         _logger.LogInformation("Creating work item of type {WorkItemType}", workItemType);
 
         ValidateWorkItemType(workItemType);
-        ValidateFields(fields);
+        ValidateFieldsForCreate(fields);
 
         var patchDocument = new JsonPatchDocument();
         foreach (var field in fields)
@@ -112,7 +112,7 @@ public class WorkItemService : IWorkItemService
     {
         _logger.LogInformation("Updating work item {WorkItemId} (rev {Revision})", id, revision);
 
-        ValidateFields(fields);
+        ValidateFieldsForUpdate(fields);
 
         var patchDocument = new JsonPatchDocument();
         foreach (var field in fields)
@@ -387,14 +387,31 @@ public class WorkItemService : IWorkItemService
         }
     }
 
-    private void ValidateFields(Dictionary<string, object> fields)
+    /// <summary>
+    /// Validates fields for creating a new work item.
+    /// System.Title is required for new work items.
+    /// </summary>
+    private void ValidateFieldsForCreate(Dictionary<string, object> fields)
     {
         if (fields == null || fields.Count == 0)
             throw new ArgumentException("Fields dictionary cannot be null or empty.", nameof(fields));
 
-        // Validate required fields
+        // Validate required fields for create
         if (!fields.ContainsKey("System.Title"))
-            throw new ArgumentException("Field 'System.Title' is required.", nameof(fields));
+            throw new ArgumentException("Field 'System.Title' is required for creating work items.", nameof(fields));
+    }
+
+    /// <summary>
+    /// Validates fields for updating an existing work item.
+    /// System.Title is NOT required for updates - only the fields being changed need to be provided.
+    /// </summary>
+    private void ValidateFieldsForUpdate(Dictionary<string, object> fields)
+    {
+        if (fields == null || fields.Count == 0)
+            throw new ArgumentException("Fields dictionary cannot be null or empty.", nameof(fields));
+
+        // For updates, we don't require System.Title since we're only updating specific fields
+        // The work item already exists and has a title
     }
 
     private bool ShouldCompress(string filePath)

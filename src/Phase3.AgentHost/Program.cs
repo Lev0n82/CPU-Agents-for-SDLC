@@ -19,6 +19,11 @@ using Serilog;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
+using Microsoft.TeamFoundation.WorkItemTracking.WebApi;
+using Microsoft.TeamFoundation.TestManagement.WebApi;
+using Microsoft.TeamFoundation.SourceControl.WebApi;
+using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Phase3.AgentHost;
 
@@ -72,6 +77,15 @@ static class Program
                 .ConfigureOpenTelemetry(configuration)
                 .Build();
 
+            // Initialize SQLite database for QA cache
+            using (var scope = host.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<Phase3.AzureDevOps.Models.QA.QaCacheDbContext>();
+                Log.Information("Ensuring QA cache database is created...");
+                dbContext.Database.EnsureCreated();
+                Log.Information("QA cache database initialized successfully");
+            }
+
             await host.RunAsync();
             return 0;
         }
@@ -88,6 +102,24 @@ static class Program
 
     private static void RegisterPhase3Services(IServiceCollection services, IConfiguration configuration)
     {
+        // Secrets Management - Register first as other services depend on it
+        var secretsProvider = configuration["Secrets:Provider"];
+        if (secretsProvider == "AzureKeyVault")
+        {
+            // Register KeyVaultConfiguration directly (not as IOptions<>) since AzureKeyVaultSecretsProvider expects it directly
+            var keyVaultConfig = new KeyVaultConfiguration
+            {
+                VaultUri = configuration["Secrets:AzureKeyVault:VaultUri"] ?? throw new InvalidOperationException("Secrets:AzureKeyVault:VaultUri is required")
+            };
+            services.AddSingleton(keyVaultConfig);
+            services.AddSingleton<ISecretsProvider, AzureKeyVaultSecretsProvider>();
+        }
+        // Note: CredentialManager secrets provider can be added when implemented
+        else
+        {
+            services.AddSingleton<ISecretsProvider, DPAPISecretsProvider>();
+        }
+
         // Authentication
         var authMethod = configuration["AzureDevOps:AuthenticationMethod"];
         if (authMethod == "PAT")
@@ -105,17 +137,54 @@ static class Program
         }
         // Note: MSAL and Certificate authentication providers can be added when implemented
 
-        // Secrets Management
-        var secretsProvider = configuration["Secrets:Provider"];
-        if (secretsProvider == "AzureKeyVault")
+        // Azure DevOps Clients - Register HTTP clients with authentication
+        var orgUrl = configuration["AzureDevOps:OrganizationUrl"];
+        var projectName = configuration["AzureDevOps:ProjectName"];
+        
+        services.AddSingleton<VssConnection>(sp =>
         {
-            services.AddSingleton<ISecretsProvider, AzureKeyVaultSecretsProvider>();
-        }
-        // Note: CredentialManager secrets provider can be added when implemented
-        else
+            var authProvider = sp.GetRequiredService<IAuthenticationProvider>();
+            var token = authProvider.GetTokenAsync().GetAwaiter().GetResult();
+            var credentials = new VssBasicCredential(string.Empty, token);
+            return new VssConnection(new Uri(orgUrl), credentials);
+        });
+
+        services.AddSingleton<WorkItemTrackingHttpClient>(sp =>
         {
-            services.AddSingleton<ISecretsProvider, DPAPISecretsProvider>();
-        }
+            var connection = sp.GetRequiredService<VssConnection>();
+            return connection.GetClient<WorkItemTrackingHttpClient>();
+        });
+
+        services.AddSingleton<TestManagementHttpClient>(sp =>
+        {
+            var connection = sp.GetRequiredService<VssConnection>();
+            return connection.GetClient<TestManagementHttpClient>();
+        });
+
+        services.AddSingleton<GitHttpClient>(sp =>
+        {
+            var connection = sp.GetRequiredService<VssConnection>();
+            return connection.GetClient<GitHttpClient>();
+        });
+
+        // Register WorkItemConfiguration
+        services.AddSingleton(new WorkItemConfiguration
+        {
+            ProjectName = projectName ?? throw new InvalidOperationException("AzureDevOps:ProjectName is required")
+        });
+
+        // Register ConcurrencyConfiguration
+        services.AddSingleton(new ConcurrencyConfiguration
+        {
+            ClaimDurationMinutes = 30,
+            StaleClaimCheckIntervalMinutes = 5
+        });
+
+        // Register WIQLValidator
+        services.AddSingleton<IWIQLValidator, Phase3.AzureDevOps.Services.WorkItems.WIQLValidator>();
+
+        // Register Azure DevOps Client
+        services.AddSingleton<IAzureDevOpsClient, Phase3.AzureDevOps.Services.Clients.AzureDevOpsClient>();
 
         // Core Services
         services.AddSingleton<IWorkItemService, Phase3.AzureDevOps.Services.WorkItems.WorkItemService>();

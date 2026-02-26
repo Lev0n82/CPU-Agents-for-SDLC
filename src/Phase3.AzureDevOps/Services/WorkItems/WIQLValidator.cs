@@ -27,6 +27,8 @@ public class WIQLValidator : IWIQLValidator
         "System.Id", "System.Title", "System.State", "System.AssignedTo",
         "System.CreatedDate", "System.ChangedDate", "System.WorkItemType",
         "System.AreaPath", "System.IterationPath", "System.Tags",
+        "System.Priority", "System.Description", "System.Reason",
+        "System.CreatedBy", "System.ChangedBy", "System.TeamProject",
         "Custom.ProcessingAgent", "Custom.ClaimExpiry"
     };
 

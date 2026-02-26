@@ -1,21 +1,25 @@
 using Azure.AI.OpenAI;
+using OpenAI;
 using OpenAI.Chat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.TeamFoundation.WorkItemTracking.WebApi.Models;
 using Phase3.AgentHost.Models;
 using System.Text.Json;
+using System.ClientModel;
 
 namespace Phase3.AgentHost.Services;
 
 /// <summary>
-/// AI Decision Service using OpenAI GPT-4 for intelligent decision-making
+/// AI Decision Service using OpenAI-compatible API (supports OpenAI, Azure OpenAI, and Ollama) for intelligent decision-making
 /// </summary>
 public class AIDecisionService : IAIDecisionService
 {
     private readonly ChatClient _chatClient;
     private readonly ILogger<AIDecisionService> _logger;
     private readonly string _model;
+    private readonly string _provider;
+
+    private readonly bool _isEnabled;
 
     public AIDecisionService(
         IConfiguration configuration,
@@ -23,19 +27,79 @@ public class AIDecisionService : IAIDecisionService
     {
         _logger = logger;
         
-        var apiKey = configuration["OpenAI:ApiKey"] 
-            ?? throw new ArgumentException("OpenAI:ApiKey is required in configuration");
-        _model = configuration["OpenAI:Model"] ?? "gpt-4";
+        var apiKey = configuration["OpenAI:ApiKey"];
+        var provider = configuration["OpenAI:Provider"] ?? "OpenAI";
+        _provider = provider;
         
-        var client = new AzureOpenAIClient(
-            new Uri(configuration["OpenAI:Endpoint"] ?? "https://api.openai.com/v1"),
-            new System.ClientModel.ApiKeyCredential(apiKey));
+        // For Ollama, API key is optional (can be empty or any value)
+        _isEnabled = !string.IsNullOrEmpty(apiKey) ||
+                     provider.Equals("Ollama", StringComparison.OrdinalIgnoreCase);
+        
+        if (!_isEnabled)
+        {
+            _logger.LogWarning("OpenAI:ApiKey is not configured. AI features will be disabled.");
+            _chatClient = null!;
+            _model = string.Empty;
+            return;
+        }
+        
+        _model = configuration["OpenAI:Model"] ?? "gpt-4";
+        var endpoint = configuration["OpenAI:Endpoint"];
+        
+        // Use dummy API key for Ollama if not provided
+        var effectiveApiKey = string.IsNullOrEmpty(apiKey) ? "ollama" : apiKey;
+        
+        _logger.LogInformation("Configuring AI service with provider: {Provider}, model: {Model}, endpoint: {Endpoint}",
+            provider, _model, endpoint ?? "default");
+        
+        if (provider.Equals("Ollama", StringComparison.OrdinalIgnoreCase))
+        {
+            // For Ollama, use OpenAI client with custom base URL
+            // Ollama's OpenAI-compatible API is at http://localhost:11434/v1
+            var ollamaEndpoint = endpoint ?? "http://localhost:11434";
+            var ollamaUri = ollamaEndpoint.EndsWith("/v1") ? ollamaEndpoint : $"{ollamaEndpoint}/v1";
             
-        _chatClient = client.GetChatClient(_model);
+            _logger.LogInformation("Using Ollama endpoint: {Endpoint}", ollamaUri);
+            
+            var openAIClient = new OpenAIClient(
+                new ApiKeyCredential(effectiveApiKey),
+                new OpenAIClientOptions { Endpoint = new Uri(ollamaUri) });
+            
+            _chatClient = openAIClient.GetChatClient(_model);
+        }
+        else if (!string.IsNullOrEmpty(endpoint))
+        {
+            // Custom endpoint (could be Azure OpenAI or self-hosted)
+            var client = new AzureOpenAIClient(
+                new Uri(endpoint),
+                new ApiKeyCredential(effectiveApiKey));
+            _chatClient = client.GetChatClient(_model);
+        }
+        else
+        {
+            // Standard OpenAI
+            var openAIClient = new OpenAIClient(new ApiKeyCredential(effectiveApiKey));
+            _chatClient = openAIClient.GetChatClient(_model);
+        }
+        
+        _logger.LogInformation("AI Decision Service initialized successfully with {Provider}", provider);
     }
 
     public async Task<CodeReviewResult> ReviewCodeAsync(string code, string language, WorkflowContext context)
     {
+        if (!_isEnabled)
+        {
+            _logger.LogWarning("AI features are disabled. Returning default code review result.");
+            return new CodeReviewResult
+            {
+                QualityScore = 0,
+                Issues = new List<CodeIssue>(),
+                SecurityVulnerabilities = new List<string>(),
+                PerformanceConcerns = new List<string>(),
+                OverallRecommendation = "AI features are disabled - manual review required"
+            };
+        }
+
         _logger.LogInformation("Starting AI code review for {Language}", language);
 
         var prompt = $@"You are an expert code reviewer. Review the following {language} code and provide:
@@ -101,6 +165,17 @@ Respond in JSON format:
         List<int> testCaseIds,
         WorkflowContext context)
     {
+        if (!_isEnabled)
+        {
+            _logger.LogWarning("AI features are disabled. Returning empty obsolescence result.");
+            return new TestObsolescenceResult
+            {
+                ObsoleteTestIds = new List<int>(),
+                Reasons = new Dictionary<int, string>(),
+                Confidence = 0
+            };
+        }
+
         _logger.LogInformation("Detecting obsolete tests for {Count} test cases", testCaseIds.Count);
 
         var prompt = $@"You are an expert QA engineer. Analyze the following test case information and determine which tests are obsolete.
@@ -161,6 +236,18 @@ Respond in JSON format:
         List<string> options,
         WorkflowContext context)
     {
+        if (!_isEnabled)
+        {
+            _logger.LogWarning("AI features are disabled. Returning default conflict resolution.");
+            return new ConflictResolutionDecision
+            {
+                RecommendedOption = 1,
+                Reasoning = "AI features are disabled - manual resolution required",
+                Confidence = 0,
+                AlternativeApproach = null
+            };
+        }
+
         _logger.LogInformation("Resolving conflict with {Count} options", options.Count);
 
         var prompt = $@"You are an expert software engineer. Analyze the following merge conflict and recommend the best resolution strategy.
@@ -219,6 +306,20 @@ Respond in JSON format:
         string stackTrace,
         WorkflowContext context)
     {
+        if (!_isEnabled)
+        {
+            _logger.LogWarning("AI features are disabled. Returning default root cause analysis.");
+            return new RootCauseAnalysis
+            {
+                RootCause = "AI features are disabled - manual analysis required",
+                LikelyCodeLocation = "Unknown",
+                RecommendedFix = "Manual investigation required",
+                PreventionStrategies = new List<string>(),
+                Confidence = 0,
+                RelatedIssues = new List<string>()
+            };
+        }
+
         _logger.LogInformation("Analyzing root cause for error");
 
         var prompt = $@"You are an expert software engineer and debugger. Analyze the following error and provide root cause analysis.
