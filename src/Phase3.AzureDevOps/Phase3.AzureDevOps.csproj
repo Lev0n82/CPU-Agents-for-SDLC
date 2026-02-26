@@ -25,7 +25,7 @@
     <!-- Git -->
     <PackageReference Include="LibGit2Sharp" Version="0.27.2" />
     <PackageReference Include="OpenTelemetry.Exporter.Prometheus.AspNetCore" Version="1.7.0-rc.1" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.7.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.8.1" />
     
     <!-- Serialization -->
     <PackageReference Include="System.Text.Json" Version="9.0.0" />
