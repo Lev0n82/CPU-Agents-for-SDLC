@@ -124,7 +124,7 @@ public interface IAuthenticationProvider
 
 **File**: `Services/Authentication/PATAuthenticationProvider.cs`
 
-**Purpose**: Provides authentication using Personal Access Tokens.
+**Purpose**: Provides authentication using Personal Access Tokens (PAT) retrieved from a secrets provider.
 
 **Class Definition**:
 
@@ -137,47 +137,77 @@ using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Provides authentication using Personal Access Tokens (PAT).
+/// Provides authentication using Personal Access Tokens (PAT) from Azure Key Vault or local storage.
+/// Supports both cached (lazy) and fresh retrieval modes.
 /// </summary>
 public class PATAuthenticationProvider : IAuthenticationProvider
 {
-    private readonly string _pat;
+    private readonly ISecretsProvider _secretsProvider;
     private readonly ILogger<PATAuthenticationProvider> _logger;
-    private static readonly Regex PATPattern = new Regex(@"^[a-z0-9]{52}$", RegexOptions.IgnoreCase);
+    private readonly bool _cacheToken;
+    private readonly Lazy<Task<string>>? _cachedPatTask;
+    // Azure DevOps PATs can be 52 chars (old format) or 76+ chars (new format with base64 encoding)
+    private static readonly Regex PATPattern = new Regex(@"^[a-z0-9]{52,}$", RegexOptions.IgnoreCase);
 
     public string AuthenticationMethod => "PAT";
-    public bool IsCached => true;
+    public bool IsCached => _cacheToken;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PATAuthenticationProvider"/> class.
     /// </summary>
-    /// <param name="pat">The Personal Access Token.</param>
+    /// <param name="secretsProvider">The secrets provider to retrieve PAT.</param>
     /// <param name="logger">Logger instance.</param>
-    /// <exception cref="ArgumentNullException">Thrown if PAT is null or empty.</exception>
-    /// <exception cref="ArgumentException">Thrown if PAT format is invalid.</exception>
-    public PATAuthenticationProvider(string pat, ILogger<PATAuthenticationProvider> logger)
+    /// <param name="cacheToken">Whether to cache the PAT token (default: true for lazy retrieval).</param>
+    public PATAuthenticationProvider(
+        ISecretsProvider secretsProvider,
+        ILogger<PATAuthenticationProvider> logger,
+        bool cacheToken = true)
     {
+        _secretsProvider = secretsProvider ?? throw new ArgumentNullException(nameof(secretsProvider));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _cacheToken = cacheToken;
+
+        if (_cacheToken)
+        {
+            _cachedPatTask = new Lazy<Task<string>>(async () =>
+            {
+                var pat = await _secretsProvider.GetSecretAsync("AzureAgentPat", CancellationToken.None);
+                if (string.IsNullOrWhiteSpace(pat))
+                    throw new ArgumentNullException(nameof(pat), "PAT cannot be null or empty.");
+
+                if (!PATPattern.IsMatch(pat))
+                    throw new ArgumentException("PAT format is invalid. Expected 52+ alphanumeric characters.", nameof(pat));
+
+                return pat;
+            });
+        }
+
+        _logger.LogDebug("PATAuthenticationProvider initialized (CacheToken: {CacheToken})", _cacheToken);
+    }
+
+    /// <summary>
+    /// Gets the PAT token from the secrets provider.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The PAT token.</returns>
+    public async Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
+    {
+        if (_cacheToken && _cachedPatTask != null)
+        {
+            _logger.LogDebug("Retrieving cached PAT token");
+            return await _cachedPatTask.Value;
+        }
+
+        _logger.LogDebug("Retrieving fresh PAT token");
+        
+        var pat = await _secretsProvider.GetSecretAsync("AzureAgentPat", cancellationToken);
         if (string.IsNullOrWhiteSpace(pat))
             throw new ArgumentNullException(nameof(pat), "PAT cannot be null or empty.");
 
         if (!PATPattern.IsMatch(pat))
-            throw new ArgumentException("PAT format is invalid. Expected 52 alphanumeric characters.", nameof(pat));
+            throw new ArgumentException("PAT format is invalid. Expected 52+ alphanumeric characters.", nameof(pat));
 
-        _pat = pat;
-        _logger = logger;
-
-        _logger.LogDebug("PATAuthenticationProvider initialized");
-    }
-
-    /// <summary>
-    /// Gets the PAT token immediately (no network call required).
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The PAT token.</returns>
-    public Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
-    {
-        _logger.LogDebug("Returning PAT token");
-        return Task.FromResult(_pat);
+        return pat;
     }
 
     /// <summary>
@@ -194,7 +224,7 @@ public class PATAuthenticationProvider : IAuthenticationProvider
 
 | Aspect | Specification |
 |--------|---------------|
-| **Validation** | PAT must be 52 alphanumeric characters |
+| **Validation** | PAT must be 52+ alphanumeric characters |
 | **Performance** | Returns immediately (<1ms) |
 | **Caching** | Token is stored in memory, never expires |
 | **Thread Safety** | Thread-safe (immutable state) |
@@ -2105,7 +2135,7 @@ public class WorkItemService : IWorkItemService
         _logger.LogInformation("Creating work item of type {WorkItemType}", workItemType);
 
         ValidateWorkItemType(workItemType);
-        ValidateFields(fields);
+        ValidateFieldsForCreate(fields);
 
         var patchDocument = new JsonPatchDocument();
         foreach (var field in fields)
@@ -2148,7 +2178,7 @@ public class WorkItemService : IWorkItemService
     {
         _logger.LogInformation("Updating work item {WorkItemId} (rev {Revision})", id, revision);
 
-        ValidateFields(fields);
+        ValidateFieldsForUpdate(fields);
 
         var patchDocument = new JsonPatchDocument();
         foreach (var field in fields)
@@ -2422,14 +2452,31 @@ public class WorkItemService : IWorkItemService
         }
     }
 
-    private void ValidateFields(Dictionary<string, object> fields)
+    /// <summary>
+    /// Validates fields for creating a new work item.
+    /// System.Title is required for new work items.
+    /// </summary>
+    private void ValidateFieldsForCreate(Dictionary<string, object> fields)
     {
         if (fields == null || fields.Count == 0)
             throw new ArgumentException("Fields dictionary cannot be null or empty.", nameof(fields));
 
-        // Validate required fields
+        // Validate required fields for create
         if (!fields.ContainsKey("System.Title"))
-            throw new ArgumentException("Field 'System.Title' is required.", nameof(fields));
+            throw new ArgumentException("Field 'System.Title' is required for creating work items.", nameof(fields));
+    }
+
+    /// <summary>
+    /// Validates fields for updating an existing work item.
+    /// System.Title is NOT required for updates - only the fields being changed need to be provided.
+    /// </summary>
+    private void ValidateFieldsForUpdate(Dictionary<string, object> fields)
+    {
+        if (fields == null || fields.Count == 0)
+            throw new ArgumentException("Fields dictionary cannot be null or empty.", nameof(fields));
+
+        // For updates, we don't require System.Title since we're only updating specific fields
+        // The work item already exists and has a title
     }
 
     private bool ShouldCompress(string filePath)
@@ -2541,6 +2588,8 @@ public class WIQLValidator : IWIQLValidator
         "System.Id", "System.Title", "System.State", "System.AssignedTo",
         "System.CreatedDate", "System.ChangedDate", "System.WorkItemType",
         "System.AreaPath", "System.IterationPath", "System.Tags",
+        "System.Priority", "System.Description", "System.Reason",
+        "System.CreatedBy", "System.ChangedBy", "System.TeamProject",
         "Custom.ProcessingAgent", "Custom.ClaimExpiry"
     };
 
@@ -3378,7 +3427,7 @@ docker run -d \
 | Setting | Type | Default | Description |
 |---------|------|---------|-------------|
 | `Authentication.Method` | enum | PAT | Authentication method (PAT, Certificate, MSALDevice) |
-| `Authentication.PAT` | string | - | Personal Access Token (52 characters) |
+| `Authentication.PAT` | string | - | Personal Access Token (52+ characters) |
 | `Authentication.Certificate.TenantId` | string | - | Azure AD tenant ID |
 | `Authentication.Certificate.ClientId` | string | - | Azure AD client ID |
 | `Authentication.Certificate.Thumbprint` | string | - | Certificate thumbprint |
